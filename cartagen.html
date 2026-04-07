@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>Carta Cipocity</title>
+</head>
+<body>
+
+<h2>Generatore Carta Cipocity</h2>
+
+<input id="userId" placeholder="ID utente">
+<select id="banca">
+    <option value="910001">Banca Cipocity</option>
+    <option value="920001">Poste Cipocity</option>
+    <option value="930001">Banca Isole Estere</option>
+</select>
+
+<button onclick="genera()">Genera</button>
+
+<p id="out"></p>
+
+<script>
+function genera() {
+    let raw = document.getElementById("userId").value.replace(/\D/g, "");
+
+    let prime5 = raw.substring(0, 5);
+
+    let somma = 0;
+    for (let i = 0; i < raw.length; i++) {
+        somma += parseInt(raw[i]);
+    }
+
+    somma = (somma % 100).toString().padStart(2, '0');
+
+    let userPart = prime5 + somma;
+
+    let bin = document.getElementById("banca").value;
+
+    let numero = bin + userPart;
+
+    while (numero.length < 15) {
+        numero += Math.floor(Math.random() * 10);
+    }
+
+    numero = numero.substring(0, 15);
+
+    let check = luhn(numero);
+    numero += check;
+
+    document.getElementById("out").innerText = format(numero);
+}
+
+function luhn(num) {
+    let sum = 0;
+    let alt = true;
+
+    for (let i = num.length - 1; i >= 0; i--) {
+        let n = parseInt(num[i]);
+
+        if (alt) {
+            n *= 2;
+            if (n > 9) n -= 9;
+        }
+
+        sum += n;
+        alt = !alt;
+    }
+
+    return (10 - (sum % 10)) % 10;
+}
+
+function format(num) {
+    return num.replace(/(.{4})/g, "$1 ").trim();
+}
+</script>
+
+</body>
+</html>
