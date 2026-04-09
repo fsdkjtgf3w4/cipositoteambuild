@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Tribunale di Cipocity - Documento Libero</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        body { font-family: 'Times New Roman', serif; background: #333; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        
+        .admin { background: #f4f4f4; padding: 20px; width: 600px; border-radius: 5px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .admin h3 { margin: 0 0 15px 0; text-transform: uppercase; border-bottom: 1px solid #ccc; padding-bottom: 5px; }
+        .field { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; font-size: 12px; text-transform: uppercase; margin-bottom: 5px; }
+        input, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; font-size: 14px; box-sizing: border-box; font-family: inherit; }
+        textarea { resize: vertical; min-height: 200px; }
+        
+        #foglio-pdf { 
+            display: none; 
+            background: white; 
+            width: 210mm; 
+            height: 297mm; 
+            padding: 20mm 25mm; 
+            box-sizing: border-box; 
+            position: relative; 
+        }
+
+        .sezione-titolo { text-align: center; border-bottom: 2px solid #000; margin-bottom: 25px; padding-bottom: 10px; }
+        .sezione-titolo h1 { margin: 0; font-size: 22pt; text-transform: uppercase; }
+        .sezione-titolo p { margin: 5px 0; font-size: 12pt; font-style: italic; }
+
+        .sezione-contenuto { 
+            text-align: justify; 
+            line-height: 1.5; 
+            font-size: 12pt; 
+            white-space: pre-wrap; 
+            word-wrap: break-word; /* Forza il ritorno a capo */
+            overflow-wrap: break-word;
+            max-height: 180mm; /* Evita che il testo finisca sopra la firma */
+            overflow: hidden;
+        }
+
+        /* Firma in basso a destra */
+        .sezione-firma { 
+            position: absolute;
+            bottom: 40mm;
+            right: 25mm;
+            text-align: center; 
+            width: 70mm; 
+        }
+        .firma-box .nome { display: block; font-size: 12pt; margin-bottom: 2px; }
+        .firma-box .linea { border-top: 1px solid #000; width: 100%; margin-bottom: 5px; }
+        .firma-box .ruolo { display: block; font-size: 10pt; text-transform: uppercase; font-weight: bold; }
+
+        .footer-fisso { position: absolute; bottom: 10mm; left: 0; right: 0; text-align: center; font-size: 9pt; color: #666; border-top: 1px solid #eee; padding-top: 5px; }
+
+        button { width: 100%; padding: 15px; background: #000; color: #fff; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+    </style>
+</head>
+<body>
+    <p>QUESTA E' UNA PAGINA RISERVATA<p>
+    <a href="./../index.html">Torna alla homepage</a>
+
+<div class="admin">
+    <h3>Redazione Documento</h3>
+    <div class="field">
+        <label>Sottotitolo</label>
+        <input type="text" id="input-sottotitolo" value="Corte Penale - Palazzo di Giustizia">
+    </div>
+    <div class="field">
+        <label>Contenuto</label>
+        <textarea id="input-contenuto" placeholder="Testo del documento..."></textarea>
+    </div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div class="field">
+            <label>Nome Firmatario</label>
+            <input type="text" id="input-nome" placeholder="Nome e Cognome">
+        </div>
+        <div class="field">
+            <label>Ruolo Firmatario</label>
+            <input type="text" id="input-ruolo" value="Il Giudice">
+        </div>
+    </div>
+    <button onclick="generaPDF()">Genera Pagina Singola</button>
+</div>
+
+<div id="foglio-pdf">
+    <div class="sezione-titolo">
+        <h1>Tribunale di Cipocity</h1>
+        <p id="output-sottotitolo"></p>
+    </div>
+    <div class="sezione-contenuto" id="output-contenuto"></div>
+    <div class="sezione-firma">
+        <div class="firma-box">
+            <span class="nome" id="output-nome"></span>
+            <div class="linea"></div>
+            <span class="ruolo" id="output-ruolo"></span>
+        </div>
+    </div>
+    <div class="footer-fisso">Documento Ufficiale - Tribunale di Cipocity</div>
+</div>
+
+<script>
+function generaPDF() {
+    document.getElementById('output-sottotitolo').innerText = document.getElementById('input-sottotitolo').value;
+    document.getElementById('output-contenuto').innerText = document.getElementById('input-contenuto').value;
+    document.getElementById('output-nome').innerText = document.getElementById('input-nome').value;
+    document.getElementById('output-ruolo').innerText = document.getElementById('input-ruolo').value;
+
+    const element = document.getElementById('foglio-pdf');
+    element.style.display = 'block';
+
+    const opt = {
+        margin: 0,
+        filename: 'Documento_Tribunale.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    html2pdf().set(opt).from(element).save().then(() => {
+        element.style.display = 'none';
+    });
+}
+</script>
+
+</body>
+</html>
