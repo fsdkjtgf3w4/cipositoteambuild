@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Decodifica Caso</title>
+<style>
+body{
+  margin:0;
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:#0f172a;
+  font-family:Georgia, serif;
+  color:#e5e7eb;
+}
+.container{
+  background:#111827;
+  padding:30px;
+  border-radius:12px;
+  width:320px;
+  text-align:center;
+}
+h1{ color:#fbbf24; }
+input,button{
+  width:100%;
+  padding:10px;
+  margin-top:10px;
+  border:none;
+  border-radius:6px;
+}
+input{ background:#1f2933; color:white; }
+button{ background:#fbbf24; font-weight:bold; cursor:pointer; }
+#output{ margin-top:15px; color:#93c5fd; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>⚖️ Decodifica</h1>
+  <input id="codice" placeholder="Numero caso">
+  <button onclick="decodifica()">Decodifica</button>
+  <p id="output"></p>
+</div>
+
+<script>
+const KEY = 73939133
+
+function decodifica(){
+  const codice = document.getElementById('codice').value.trim().toUpperCase()
+  if(!codice) return
+
+  try{
+    const num = parseInt(codice, 36) ^ KEY
+
+    const dataNum = Math.floor(num / 100000)
+    const data = dataNum.toString().padStart(6,'0')
+
+    const dataFormattata =
+      "20" + data.slice(0,2) + "-" +
+      data.slice(2,4) + "-" +
+      data.slice(4,6)
+
+    document.getElementById('output').innerText =
+      "DATA: " + dataFormattata + " | NOME OFFUSCATO"
+  }catch(e){
+    document.getElementById('output').innerText = "CODICE NON VALIDO"
+  }
+}
+</script>
+
+</body>
+</html>

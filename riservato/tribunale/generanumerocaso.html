@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Genera Caso</title>
+<style>
+body{
+  margin:0;
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:#0f172a;
+  font-family:Georgia, serif;
+  color:#e5e7eb;
+}
+.container{
+  background:#111827;
+  padding:30px;
+  border-radius:12px;
+  width:320px;
+  text-align:center;
+}
+h1{ color:#fbbf24; }
+input,button{
+  width:100%;
+  padding:10px;
+  margin-top:10px;
+  border:none;
+  border-radius:6px;
+}
+input{ background:#1f2933; color:white; }
+button{ background:#fbbf24; font-weight:bold; cursor:pointer; }
+#output{ margin-top:15px; color:#93c5fd; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>⚖️ Registro</h1>
+  <input id="nome" placeholder="Nome giudice">
+  <button onclick="genera()">Genera</button>
+  <p id="output"></p>
+</div>
+
+<script>
+const KEY = 73939133
+
+function strToNum(str){
+  let n = 0
+  for(let i=0;i<str.length;i++){
+    n = (n * 31 + str.charCodeAt(i)) % 100000
+  }
+  return n
+}
+
+function genera(){
+  const nome = document.getElementById('nome').value.trim().toUpperCase()
+  if(!nome) return
+
+  const d = new Date()
+  const data =
+    d.getFullYear().toString().slice(2) +
+    String(d.getMonth()+1).padStart(2,'0') +
+    String(d.getDate()).padStart(2,'0')
+
+  const nomeNum = strToNum(nome)
+  const combined = (parseInt(data) * 100000 + nomeNum) ^ KEY
+
+  let codice = combined.toString(36).toUpperCase()
+
+  if(codice.length > 10){
+    codice = codice.slice(0,10)
+  }
+
+  document.getElementById('output').innerText = codice
+}
+</script>
+
+</body>
+</html>
