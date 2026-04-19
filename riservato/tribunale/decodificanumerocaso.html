@@ -47,7 +47,8 @@ button{ background:#fbbf24; font-weight:bold; cursor:pointer; }
 const KEY = "TRIBUNALE2026"
 
 function fromBase36(str){
-  let num = BigInt(parseInt(str,36))
+  let num = BigInt("0x0")
+  num = BigInt(parseInt(str,36))
   let bytes = []
   while(num > 0){
     bytes.unshift(Number(num & 255n))
@@ -59,17 +60,11 @@ function fromBase36(str){
 function xor(str, key){
   let out = ""
   for(let i=0;i<str.length;i++){
-    out += String.fromCharCode(str.charCodeAt(i) ^ key.charCodeAt(i % key.length))
+    out += String.fromCharCode(
+      str.charCodeAt(i) ^ key.charCodeAt(i % key.length)
+    )
   }
   return out
-}
-
-function firma(str, key){
-  let h = 0
-  for(let i=0;i<str.length;i++){
-    h = (h * 31 + str.charCodeAt(i) + key.charCodeAt(i % key.length)) >>> 0
-  }
-  return h.toString(36).toUpperCase().slice(0,4)
 }
 
 function decodifica(){
@@ -80,13 +75,7 @@ function decodifica(){
     const decoded = fromBase36(codice)
     const originale = xor(decoded, KEY)
 
-    const [nome, data, sig] = originale.split("|")
-
-    const check = firma(nome + "|" + data, KEY)
-    if(sig !== check){
-      document.getElementById('output').innerText = "CODICE MANOMESSO"
-      return
-    }
+    const [nome, data] = originale.split("|")
 
     const dataFormattata =
       "20" + data.slice(0,2) + "-" +
@@ -95,7 +84,6 @@ function decodifica(){
 
     document.getElementById('output').innerText =
       "GIUDICE: " + nome + " | DATA: " + dataFormattata
-
   }catch(e){
     document.getElementById('output').innerText = "CODICE NON VALIDO"
   }
