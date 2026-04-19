@@ -18,66 +18,66 @@ body{
   background:#111827;
   padding:30px;
   border-radius:12px;
-  width:340px;
+  box-shadow:0 0 30px rgba(0,0,0,0.6);
+  width:320px;
   text-align:center;
 }
-h1{ color:#fbbf24; }
-input,button{
+h1{
+  margin-bottom:20px;
+  color:#fbbf24;
+}
+input{
   width:100%;
   padding:10px;
-  margin-top:10px;
+  margin-bottom:15px;
   border:none;
   border-radius:6px;
+  background:#1f2933;
+  color:white;
 }
-input{ background:#1f2933; color:white; }
-button{ background:#fbbf24; font-weight:bold; cursor:pointer; }
-#output{ margin-top:15px; color:#93c5fd; word-break:break-all; }
+button{
+  width:100%;
+  padding:10px;
+  border:none;
+  border-radius:6px;
+  background:#fbbf24;
+  color:black;
+  font-weight:bold;
+  cursor:pointer;
+}
+button:hover{
+  background:#f59e0b;
+}
+#output{
+  margin-top:15px;
+  word-break:break-all;
+  color:#93c5fd;
+}
 </style>
 </head>
 <body>
 
 <div class="container">
-  <h1>⚖️ REGISTRO</h1>
-  <input id="nome" placeholder="NOME GIUDICE">
-  <button onclick="genera()">GENERA</button>
+  <h1>⚖️ Registro Tribunale</h1>
+  <input id="nome" placeholder="Nome giudice">
+  <button onclick="genera()">Genera numero caso</button>
   <p id="output"></p>
 </div>
 
 <script>
-const KEY = "TRIBUNALE2026"
-
-function xor(str, key){
-  let out = ""
-  for(let i=0;i<str.length;i++){
-    out += String.fromCharCode(
-      str.charCodeAt(i) ^ key.charCodeAt(i % key.length)
-    )
-  }
-  return out
-}
-
-function toBase36(str){
-  let num = BigInt(0)
-  for(let i=0;i<str.length;i++){
-    num = (num << 8n) + BigInt(str.charCodeAt(i))
-  }
-  return num.toString(36).toUpperCase()
+function base64urlEncode(str){
+  return btoa(str).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')
 }
 
 function genera(){
-  const nome = document.getElementById('nome').value.trim().toUpperCase()
+  const nome = document.getElementById('nome').value.trim()
   if(!nome) return
-
   const d = new Date()
-  const data =
-    d.getFullYear().toString().slice(2) +
-    String(d.getMonth()+1).padStart(2,'0') +
-    String(d.getDate()).padStart(2,'0')
-
+  const data = d.getFullYear().toString().slice(2) +
+               String(d.getMonth()+1).padStart(2,'0') +
+               String(d.getDate()).padStart(2,'0')
   const payload = nome + "|" + data
-  const cifrato = xor(payload, KEY)
-  const codice = toBase36(cifrato)
-
+  const codice = base64urlEncode(payload)
   document.getElementById('output').innerText = codice
 }
 </script>

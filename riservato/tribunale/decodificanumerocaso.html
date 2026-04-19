@@ -18,74 +18,69 @@ body{
   background:#111827;
   padding:30px;
   border-radius:12px;
-  width:340px;
+  box-shadow:0 0 30px rgba(0,0,0,0.6);
+  width:320px;
   text-align:center;
 }
-h1{ color:#fbbf24; }
-input,button{
+h1{
+  margin-bottom:20px;
+  color:#fbbf24;
+}
+input{
   width:100%;
   padding:10px;
-  margin-top:10px;
+  margin-bottom:15px;
   border:none;
   border-radius:6px;
+  background:#1f2933;
+  color:white;
 }
-input{ background:#1f2933; color:white; }
-button{ background:#fbbf24; font-weight:bold; cursor:pointer; }
-#output{ margin-top:15px; color:#93c5fd; }
+button{
+  width:100%;
+  padding:10px;
+  border:none;
+  border-radius:6px;
+  background:#fbbf24;
+  color:black;
+  font-weight:bold;
+  cursor:pointer;
+}
+button:hover{
+  background:#f59e0b;
+}
+#output{
+  margin-top:15px;
+  color:#93c5fd;
+}
 </style>
 </head>
 <body>
 
 <div class="container">
-  <h1>⚖️ DECODIFICA</h1>
-  <input id="codice" placeholder="CODICE CASO">
-  <button onclick="decodifica()">DECODIFICA</button>
+  <h1>⚖️ Decodifica Caso</h1>
+  <input id="codice" placeholder="Numero caso">
+  <button onclick="decodifica()">Decodifica</button>
   <p id="output"></p>
 </div>
 
 <script>
-const KEY = "TRIBUNALE2026"
-
-function fromBase36(str){
-  let num = BigInt("0x0")
-  num = BigInt(parseInt(str,36))
-  let bytes = []
-  while(num > 0){
-    bytes.unshift(Number(num & 255n))
-    num = num >> 8n
-  }
-  return String.fromCharCode(...bytes)
-}
-
-function xor(str, key){
-  let out = ""
-  for(let i=0;i<str.length;i++){
-    out += String.fromCharCode(
-      str.charCodeAt(i) ^ key.charCodeAt(i % key.length)
-    )
-  }
-  return out
+function base64urlDecode(str){
+  str = str.replace(/-/g,'+').replace(/_/g,'/')
+  while(str.length % 4) str += '='
+  return atob(str)
 }
 
 function decodifica(){
-  const codice = document.getElementById('codice').value.trim().toUpperCase()
+  const codice = document.getElementById('codice').value.trim()
   if(!codice) return
-
   try{
-    const decoded = fromBase36(codice)
-    const originale = xor(decoded, KEY)
-
-    const [nome, data] = originale.split("|")
-
-    const dataFormattata =
-      "20" + data.slice(0,2) + "-" +
-      data.slice(2,4) + "-" +
-      data.slice(4,6)
-
+    const decoded = base64urlDecode(codice)
+    const [nome, data] = decoded.split("|")
+    const dataFormattata = "20" + data.slice(0,2) + "-" + data.slice(2,4) + "-" + data.slice(4,6)
     document.getElementById('output').innerText =
-      "GIUDICE: " + nome + " | DATA: " + dataFormattata
+      "Giudice: " + nome + " | Data: " + dataFormattata
   }catch(e){
-    document.getElementById('output').innerText = "CODICE NON VALIDO"
+    document.getElementById('output').innerText = "Codice non valido"
   }
 }
 </script>
