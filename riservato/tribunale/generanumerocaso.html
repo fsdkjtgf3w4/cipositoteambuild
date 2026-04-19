@@ -18,7 +18,7 @@ body{
   background:#111827;
   padding:30px;
   border-radius:12px;
-  width:320px;
+  width:340px;
   text-align:center;
 }
 h1{ color:#fbbf24; }
@@ -31,27 +31,43 @@ input,button{
 }
 input{ background:#1f2933; color:white; }
 button{ background:#fbbf24; font-weight:bold; cursor:pointer; }
-#output{ margin-top:15px; color:#93c5fd; }
+#output{ margin-top:15px; word-break:break-all; color:#93c5fd; }
 </style>
 </head>
 <body>
 
 <div class="container">
-  <h1>⚖️ Registro</h1>
-  <input id="nome" placeholder="Nome giudice">
-  <button onclick="genera()">Genera</button>
+  <h1>⚖️ REGISTRO</h1>
+  <input id="nome" placeholder="NOME GIUDICE">
+  <button onclick="genera()">GENERA</button>
   <p id="output"></p>
 </div>
 
 <script>
-const KEY = 73939133
+const KEY = "TRIBUNALE2026"
 
-function strToNum(str){
-  let n = 0
+function xor(str, key){
+  let out = ""
   for(let i=0;i<str.length;i++){
-    n = (n * 31 + str.charCodeAt(i)) % 100000
+    out += String.fromCharCode(str.charCodeAt(i) ^ key.charCodeAt(i % key.length))
   }
-  return n
+  return out
+}
+
+function firma(str, key){
+  let h = 0
+  for(let i=0;i<str.length;i++){
+    h = (h * 31 + str.charCodeAt(i) + key.charCodeAt(i % key.length)) >>> 0
+  }
+  return h.toString(36).toUpperCase().slice(0,4)
+}
+
+function toBase36(str){
+  let num = 0n
+  for(let i=0;i<str.length;i++){
+    num = (num << 8n) + BigInt(str.charCodeAt(i))
+  }
+  return num.toString(36).toUpperCase()
 }
 
 function genera(){
@@ -64,14 +80,12 @@ function genera(){
     String(d.getMonth()+1).padStart(2,'0') +
     String(d.getDate()).padStart(2,'0')
 
-  const nomeNum = strToNum(nome)
-  const combined = (parseInt(data) * 100000 + nomeNum) ^ KEY
+  const payload = nome + "|" + data
+  const sig = firma(payload, KEY)
 
-  let codice = combined.toString(36).toUpperCase()
-
-  if(codice.length > 10){
-    codice = codice.slice(0,10)
-  }
+  const completo = payload + "|" + sig
+  const cifrato = xor(completo, KEY)
+  const codice = toBase36(cifrato)
 
   document.getElementById('output').innerText = codice
 }

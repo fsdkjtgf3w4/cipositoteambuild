@@ -18,7 +18,7 @@ body{
   background:#111827;
   padding:30px;
   border-radius:12px;
-  width:320px;
+  width:340px;
   text-align:center;
 }
 h1{ color:#fbbf24; }
@@ -37,24 +37,56 @@ button{ background:#fbbf24; font-weight:bold; cursor:pointer; }
 <body>
 
 <div class="container">
-  <h1>⚖️ Decodifica</h1>
-  <input id="codice" placeholder="Numero caso">
-  <button onclick="decodifica()">Decodifica</button>
+  <h1>⚖️ DECODIFICA</h1>
+  <input id="codice" placeholder="CODICE CASO">
+  <button onclick="decodifica()">DECODIFICA</button>
   <p id="output"></p>
 </div>
 
 <script>
-const KEY = 73939133
+const KEY = "TRIBUNALE2026"
+
+function fromBase36(str){
+  let num = BigInt(parseInt(str,36))
+  let bytes = []
+  while(num > 0){
+    bytes.unshift(Number(num & 255n))
+    num = num >> 8n
+  }
+  return String.fromCharCode(...bytes)
+}
+
+function xor(str, key){
+  let out = ""
+  for(let i=0;i<str.length;i++){
+    out += String.fromCharCode(str.charCodeAt(i) ^ key.charCodeAt(i % key.length))
+  }
+  return out
+}
+
+function firma(str, key){
+  let h = 0
+  for(let i=0;i<str.length;i++){
+    h = (h * 31 + str.charCodeAt(i) + key.charCodeAt(i % key.length)) >>> 0
+  }
+  return h.toString(36).toUpperCase().slice(0,4)
+}
 
 function decodifica(){
   const codice = document.getElementById('codice').value.trim().toUpperCase()
   if(!codice) return
 
   try{
-    const num = parseInt(codice, 36) ^ KEY
+    const decoded = fromBase36(codice)
+    const originale = xor(decoded, KEY)
 
-    const dataNum = Math.floor(num / 100000)
-    const data = dataNum.toString().padStart(6,'0')
+    const [nome, data, sig] = originale.split("|")
+
+    const check = firma(nome + "|" + data, KEY)
+    if(sig !== check){
+      document.getElementById('output').innerText = "CODICE MANOMESSO"
+      return
+    }
 
     const dataFormattata =
       "20" + data.slice(0,2) + "-" +
@@ -62,7 +94,8 @@ function decodifica(){
       data.slice(4,6)
 
     document.getElementById('output').innerText =
-      "DATA: " + dataFormattata + " | NOME OFFUSCATO"
+      "GIUDICE: " + nome + " | DATA: " + dataFormattata
+
   }catch(e){
     document.getElementById('output').innerText = "CODICE NON VALIDO"
   }
