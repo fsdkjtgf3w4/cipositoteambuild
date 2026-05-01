@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { background: #0f0f0f; color: #e0e0e0; font-family: 'Courier New', monospace; padding: 20px; }
+        .container { max-width: 700px; margin: auto; border: 2px solid #c0392b; padding: 20px; background: #1a1a1a; box-shadow: 0 0 15px rgba(192,57,43,0.4); }
+        input { width: 100%; padding: 12px; background: #000; border: 1px solid #c0392b; color: #fff; margin-bottom: 20px; box-sizing: border-box; font-size: 16px; }
+        .result { border-top: 1px solid #444; padding-top: 15px; }
+        .stat { margin: 10px 0; font-size: 1.1em; }
+        .highlight { color: #f1c40f; font-weight: bold; }
+        ul { font-size: 0.85em; color: #bbb; padding-left: 20px; }
+        h3 { color: #c0392b; text-align: center; margin-top: 0; text-transform: uppercase; }
+        .info-art14 { font-size: 0.8em; color: #ff4d4d; font-style: italic; margin-top: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h3>ANALIZZATORE REATI AGGIORNATO</h3>
+    <input type="text" id="inputReati" placeholder="Incolli l'output (es: Art. 1, Art. 13 c.6...)" oninput="analizza()">
+
+    <div id="output" class="result">
+        <div class="stat">Pena Totale: <span id="resPena" class="highlight">0 - 0</span> min</div>
+        <div class="stat">Multa Totale: <span id="resMulta" class="highlight">€ 0 - 0</span></div>
+        <div id="alertEvasione" class="info-art14" style="display:none;">⚠️ Rilevato Art. 14: Ricordarsi di aggiungere fino al +40% al totale (anche della multa).</div>
+        <hr>
+        <strong>Dettaglio Articoli:</strong>
+        <div id="resNomi"></div>
+    </div>
+</div>
+
+<script>
+const db = [
+    { art: "Art. 1", nome: "Rapina", minM: 0, maxM: 0, minP: 0, maxP: 10 },
+    { art: "Art. 1 c.1", nome: "Rapina a mano armata", minM: 200, maxM: 10000, minP: 0, maxP: 20 },
+    { art: "Art. 1 c.2", nome: "Rapina con feriti", minM: 1000, maxM: 15000, minP: 0, maxP: 60 },
+    { art: "Art. 2", nome: "Omicidio Doloso", minM: 1, maxM: 15000, minP: 0, maxP: 95 },
+    { art: "Art. 2 c.1", nome: "Omicidio Premeditato", minM: 500, maxM: 45000, minP: 0, maxP: 225 },
+    { art: "Art. 2 c.2", nome: "Omicidio P.U.", minM: 1000, maxM: 55000, minP: 0, maxP: 120 },
+    { art: "Art. 3", nome: "Omicidio colposo", minM: 200, maxM: 3000, minP: 0, maxP: 50 },
+    { art: "Art. 4", nome: "Omicidio preteintenzionale", minM: 0, maxM: 0, minP: 0, maxP: 70 },
+    { art: "Art. 5", nome: "Tentato omicidio", minM: 200, maxM: 1000, minP: 0, maxP: 35 },
+    { art: "Art. 6", nome: "Violenza Privata", minM: 0, maxM: 0, minP: 0, maxP: 10 },
+    { art: "Art. 7", nome: "Percosse", minM: 100, maxM: 1000, minP: 0, maxP: 0 },
+    { art: "Art. 7 c.2", nome: "Percosse a P.U.", minM: 0, maxM: 0, minP: 1, maxP: 15 },
+    { art: "Art. 8", nome: "Minaccia", minM: 0, maxM: 1000, minP: 0, maxP: 0 },
+    { art: "Art. 9", nome: "Diffamazione", minM: 0, maxM: 750, minP: 0, maxP: 0 },
+    { art: "Art. 10", nome: "Calunnia", minM: 0, maxM: 3000, minP: 0, maxP: 30 },
+    { art: "Art. 10 c.1", nome: "Calunnia diffamatoria", minM: 0, maxM: 0, minP: 0, maxP: 60 },
+    { art: "Art. 10 c.2", nome: "Calunnia grave", minM: 0, maxM: 0, minP: 0, maxP: 180 },
+    { art: "Art. 11", nome: "Evasione Fiscale", minM: 0, maxM: 25000, minP: 0, maxP: 2100 },
+    { art: "Art. 12", nome: "Possesso oggetti atti ad offendere", minM: 0, maxM: 1000, minP: 0, maxP: 0 },
+    { art: "Art. 13 c.1", nome: "Matricola cancellata", minM: 0, maxM: 0, minP: 0, maxP: 60 },
+    { art: "Art. 13 c.2", nome: "Matricola altrui", minM: 0, maxM: 0, minP: 0, maxP: 60 },
+    { art: "Art. 13 c.3", nome: "Possesso arma illegale", minM: 0, maxM: 35000, minP: 0, maxP: 180 },
+    { art: "Art. 13 c.4-a", nome: "Pistola colpo singolo (illegittima)", minM: 0, maxM: 3000, minP: 0, maxP: 0 },
+    { art: "Art. 13 c.4-b", nome: "Fucile caccia (illegittimo)", minM: 0, maxM: 10000, minP: 0, maxP: 25 },
+    { art: "Art. 13 c.4-c", nome: "Mitragliette leggere (illegittime)", minM: 0, maxM: 13000, minP: 0, maxP: 35 },
+    { art: "Art. 13 c.4-d", nome: "Fucile a pompa (illegittimo)", minM: 0, maxM: 15000, minP: 0, maxP: 35 },
+    { art: "Art. 13 c.5-a", nome: "Fucile da tiratore", minM: 0, maxM: 35000, minP: 11, maxP: 48 },
+    { art: "Art. 13 c.5-b", nome: "Fucile d’assalto", minM: 2500, maxM: 14000, minP: 20, maxP: 120 },
+    { art: "Art. 13 c.5-c", nome: "Mitragliatori pesanti", minM: 2000, maxM: 15000, minP: 15, maxP: 60 },
+    { art: "Art. 13 c.6", nome: "Arma distruzione massa", minM: 4500, maxM: 200000, minP: 0, maxP: 2700 },
+    { art: "Art. 14", nome: "Evasione custodia PG", minM: 0, maxM: 0, minP: 0, maxP: 0 },
+    { art: "Art. 15", nome: "Sequestro di persona", minM: 0, maxM: 0, minP: 0, maxP: 60 },
+    { art: "Art. 16", nome: "Violazione domicilio", minM: 15, maxM: 380, minP: 0, maxP: 10 },
+    { art: "Art. 17", nome: "Danneggiamento", minM: 0, maxM: 1000, minP: 0, maxP: 0 },
+    { art: "Art. 18", nome: "Rifiuto Leva", minM: 0, maxM: 100000, minP: 0, maxP: 86400 },
+    { art: "Art. 19", nome: "Disturbo quiete", minM: 295, maxM: 1250, minP: 0, maxP: 0 },
+    { art: "Art. 20", nome: "Resistenza a P.U.", minM: 0, maxM: 0, minP: 0, maxP: 30 },
+    { art: "Art. 21", nome: "Interruzione Pubblico Servizio", minM: 0, maxM: 0, minP: 0, maxP: 45 },
+    { art: "Art. 22", nome: "Inquinamento", minM: 80, maxM: 500, minP: 0, maxP: 0 },
+    { art: "Art. 23 c.1", nome: "Sostanze stupefacenti", minM: 150, maxM: 4500, minP: 0, maxP: 55 },
+    { art: "Art. 23 c.1-agg", nome: "Spaccio (>1 stack)", minM: 600, maxM: 15000, minP: 0, maxP: 120 },
+    { art: "Art. 23 c.2", nome: "Sostanze nocive/letali", minM: 30, maxM: 450, minP: 0, maxP: 15 },
+    { art: "Art. 24", nome: "Vilipendio allo Stato", minM: 0, maxM: 0, minP: 9999, maxP: 9999 },
+    { art: "Art. 25", nome: "Oltraggio a P.U.", minM: 0, maxM: 2000, minP: 0, maxP: 15 },
+    { art: "Art. 26", nome: "Terrorismo", minM: 0, maxM: 295000, minP: 3000, maxP: 99999 },
+    { art: "Art. 27", nome: "Falso Ideologico", minM: 0, maxM: 3000, minP: 0, maxP: 75 },
+    { art: "Art. 28", nome: "Truffa", minM: 0, maxM: 1000, minP: 15, maxP: 60 },
+    { art: "Art. 29", nome: "Peculato", minM: 0, maxM: 4000, minP: 60, maxP: 130 },
+    { art: "Art. 30", nome: "Omissione atti al Governo", minM: 25, maxM: 6500, minP: 0, maxP: 30 },
+    { art: "Art. 31", nome: "Abuso di potere", minM: 0, maxM: 1000, minP: 0, maxP: 25 },
+    { art: "Art. 32", nome: "Omissioni atti d’ufficio", minM: 300, maxM: 4950, minP: 5, maxP: 20 },
+    { art: "Art. 34", nome: "Estorsione", minM: 150, maxM: 15800, minP: 5, maxP: 60 },
+    { art: "Art. 35", nome: "Ricettazione", minM: 10, maxM: 3850, minP: 0, maxP: 30 },
+    { art: "Art. 36", nome: "Atti persecutori", minM: 150, maxM: 3000, minP: 0, maxP: 15 },
+    { art: "Art. 37", nome: "Corruzione", minM: 0, maxM: 13950, minP: 0, maxP: 60 },
+    { art: "Art. 38", nome: "Favoreggiamento", minM: 0, maxM: 3000, minP: 0, maxP: 20 },
+    { art: "Art. 39", nome: "Falsa testimonianza", minM: 0, maxM: 5000, minP: 0, maxP: 10 },
+    { art: "Art. 40", nome: "Distruzione bene governativo", minM: 0, maxM: 0, minP: 0, maxP: 0 },
+    { art: "Art. 41", nome: "Contraffazione banconote governative", minM: 0, maxM: 0, minP: 0, maxP: 0 },
+    { art: "Art. 42", nome: "Contraffazione denaro", minM: 0, maxM: 0, minP: 3, maxP: 25 }
+];
+
+function analizza() {
+    const input = document.getElementById('inputReati').value;
+    let minP = 0, maxP = 0, minM = 0, maxM = 0, nomi = [];
+    let hasArt14 = false;
+
+    db.forEach(item => {
+        // Regex migliorata per evitare match parziali tra Art. 23 c.1 e Art. 23 c.1-agg
+        const regex = new RegExp(item.art.replace('.', '\\.') + '(?![\\w\\-])', 'g');
+        if (regex.test(input)) {
+            minP += item.minP; maxP += item.maxP;
+            minM += item.minM; maxM += item.maxM;
+            nomi.push(<li><b>${item.art}</b> - ${item.nome}</li>);
+            if(item.art === "Art. 14") hasArt14 = true;
+        }
+    });
+
+    document.getElementById('resPena').innerText = minP >= 9999 ? "PENA DI MORTE" : ${minP} - ${maxP};
+    document.getElementById('resMulta').innerText = € ${minM.toLocaleString()} - ${maxM.toLocaleString()};
+    document.getElementById('resNomi').innerHTML = nomi.length > 0 ? <ul>${nomi.join('')}</ul> : "Nessun reato rilevato.";
+    document.getElementById('alertEvasione').style.display = hasArt14 ? "block" : "none";
+}
+</script>
+</body>
+</html>
