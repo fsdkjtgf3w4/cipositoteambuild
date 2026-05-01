@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CipoCity - Database Polizia Giudiziaria</title>
+    <style>
+        :root { --primary: #c0392b; --bg: #0f0f0f; --card: #1a1a1a; --text: #e0e0e0; }
+        body { background: var(--bg); color: var(--text); font-family: 'Courier New', Courier, monospace; margin: 0; padding: 20px; }
+        .container { max-width: 900px; margin: auto; border: 2px solid var(--primary); padding: 20px; box-shadow: 0 0 15px rgba(192, 57, 43, 0.3); }
+        
+        h1, h2 { text-align: center; color: var(--primary); text-transform: uppercase; letter-spacing: 3px; border-bottom: 1px solid var(--primary); padding-bottom: 10px; }
+        
+        .search-box { width: 100%; padding: 15px; margin-bottom: 20px; background: #222; border: 1px solid #444; color: white; font-size: 16px; box-sizing: border-box; }
+        
+        .crime-list { max-height: 500px; overflow-y: auto; margin-bottom: 20px; border: 1px solid #333; background: #050505; }
+        .crime-item { display: flex; align-items: flex-start; padding: 12px; border-bottom: 1px solid #222; transition: 0.2s; }
+        .crime-item:hover { background: #111; }
+        .crime-item input[type="checkbox"] { margin-right: 15px; transform: scale(1.5); cursor: pointer; margin-top: 5px; }
+        
+        .crime-details { flex-grow: 1; }
+        .art-title { font-weight: bold; color: var(--primary); margin-bottom: 4px; }
+        .desc { font-size: 0.85em; color: #999; margin-bottom: 5px; }
+        .pena-info { font-size: 0.9em; color: #bbb; font-style: italic; }
+
+        .calculator-panel { position: sticky; bottom: 0; background: var(--card); border: 2px solid var(--primary); padding: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .resoconto-box { background: #000; padding: 10px; border: 1px solid #444; height: 100px; overflow-y: auto; font-size: 0.8em; grid-column: span 2; }
+        .stat-label { font-size: 0.8em; color: #888; text-transform: uppercase; }
+        .stat-value { font-size: 1.4em; font-weight: bold; color: #fff; }
+        .highlight { color: #f1c40f; }
+        
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-thumb { background: var(--primary); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>DIPARTIMENTO DI GIUSTIZIA - CIPOCITY</h1>
+    <h2>MODULO ARRESTI E SANZIONI</h2>
+
+    <input type="text" id="searchBar" class="search-box" placeholder="Cerca Articolo o Reato..." onkeyup="filterCrimes()">
+
+    <div class="crime-list" id="crimeContainer">
+        </div>
+
+    <div class="calculator-panel">
+        <div class="resoconto-box" id="summaryList">Nessun reato selezionato.</div>
+        
+        <div>
+            <div class="stat-label">Tempo di Reclusione Totale</div>
+            <div class="stat-value"><span id="minPena" class="highlight">0</span> - <span id="maxPena" class="highlight">0</span> min</div>
+        </div>
+        
+        <div>
+            <div class="stat-label">Sanzione Pecuniaria Totale</div>
+            <div class="stat-value">€ <span id="minMulta" class="highlight">0</span> - € <span id="maxMulta" class="highlight">0</span></div>
+        </div>
+        
+        <button onclick="resetAll()" style="grid-column: span 2; padding: 10px; background: var(--primary); color: white; border: none; cursor: pointer; font-weight: bold;">RESET MODULO</button>
+    </div>
+</div>
+
+<script>
+const database = [
+    { art: "Art. 1", nome: "Rapina", minM: 0, maxM: 0, minP: 0, maxP: 10 },
+    { art: "Art. 1 c.1", nome: "Rapina a mano armata", minM: 200, maxM: 10000, minP: 0, maxP: 20 },
+    { art: "Art. 1 c.2", nome: "Rapina con feriti", minM: 1000, maxM: 15000, minP: 0, maxP: 60 },
+    { art: "Art. 2", nome: "Omicidio Doloso", minM: 1, maxM: 15000, minP: 0, maxP: 95 },
+    { art: "Art. 2 c.1", nome: "Omicidio Premeditato", minM: 500, maxM: 45000, minP: 0, maxP: 225 },
+    { art: "Art. 2 c.2", nome: "Omicidio P.U.", minM: 1000, maxM: 55000, minP: 0, maxP: 120 },
+    { art: "Art. 3", nome: "Omicidio colposo", minM: 200, maxM: 3000, minP: 0, maxP: 50 },
+    { art: "Art. 4", nome: "Omicidio preteintenzionale", minM: 0, maxM: 0, minP: 0, maxP: 70 },
+    { art: "Art. 5", nome: "Tentato omicidio", minM: 200, maxM: 1000, minP: 0, maxP: 35 },
+    { art: "Art. 6", nome: "Violenza Privata", minM: 0, maxM: 0, minP: 0, maxP: 10 },
+    { art: "Art. 7", nome: "Percosse", minM: 100, maxM: 1000, minP: 0, maxP: 0 },
+    { art: "Art. 7 c.2", nome: "Percosse a P.U.", minM: 0, maxM: 0, minP: 1, maxP: 15 },
+    { art: "Art. 8", nome: "Minaccia", minM: 0, maxM: 1000, minP: 0, maxP: 0 },
+    { art: "Art. 9", nome: "Diffamazione", minM: 0, maxM: 750, minP: 0, maxP: 0 },
+    { art: "Art. 10", nome: "Calunnia", minM: 0, maxM: 3000, minP: 0, maxP: 30 },
+    { art: "Art. 10 c.1", nome: "Calunnia diffamatoria", minM: 0, maxM: 0, minP: 0, maxP: 60 },
+    { art: "Art. 10 c.2", nome: "Calunnia grave", minM: 0, maxM: 0, minP: 0, maxP: 180 },
+    { art: "Art. 11", nome: "Evasione Fiscale", minM: 0, maxM: 25000, minP: 0, maxP: 2100 },
+    { art: "Art. 12", nome: "Possesso oggetti atti ad offendere", minM: 0, maxM: 1000, minP: 0, maxP: 0 },
+    { art: "Art. 13 c.1", nome: "Matricola cancellata", minM: 0, maxM: 0, minP: 0, maxP: 60 },
+    { art: "Art. 13 c.2", nome: "Matricola altrui", minM: 0, maxM: 0, minP: 0, maxP: 60 },
+    { art: "Art. 13 c.3", nome: "Possesso arma illegale", minM: 0, maxM: 35000, minP: 0, maxP: 180 },
+    { art: "Art. 13 c.4-a", nome: "Pistola colpo singolo (illegittima)", minM: 0, maxM: 3000, minP: 0, maxP: 0 },
+    { art: "Art. 13 c.4-b", nome: "Fucile caccia (illegittimo)", minM: 0, maxM: 10000, minP: 0, maxP: 25 },
+    { art: "Art. 13 c.4-c", nome: "Mitragliette leggere (illegittime)", minM: 0, maxM: 13000, minP: 0, maxP: 35 },
+    { art: "Art. 13 c.4-d", nome: "Fucile a pompa (illegittimo)", minM: 0, maxM: 15000, minP: 0, maxP: 35 },
+    { art: "Art. 13 c.5-a", nome: "Fucile da tiratore", minM: 0, maxM: 35000, minP: 11, maxP: 48 },
+    { art: "Art. 13 c.5-b", nome: "Fucile d’assalto", minM: 2500, maxM: 14000, minP: 20, maxP: 120 },
+    { art: "Art. 13 c.5-c", nome: "Mitragliatori pesanti", minM: 2000, maxM: 15000, minP: 15, maxP: 60 },
+    { art: "Art. 13 c.6", nome: "Arma distruzione massa", minM: 4500, maxM: 200000, minP: 0, maxP: 2700 },
+    { art: "Art. 14", nome: "Evasione custodia PG", minM: 0, maxM: 0, minP: 0, maxP: 0 },
+    { art: "Art. 15", nome: "Sequestro di persona", minM: 0, maxM: 0, minP: 0, maxP: 60 },
+    { art: "Art. 16", nome: "Violazione domicilio", minM: 15, maxM: 380, minP: 0, maxP: 10 },
+    { art: "Art. 17", nome: "Danneggiamento", minM: 0, maxM: 1000, minP: 0, maxP: 0 },
+    { art: "Art. 18", nome: "Rifiuto Leva", minM: 0, maxM: 100000, minP: 0, maxP: 86400 },
+    { art: "Art. 19", nome: "Disturbo quiete", minM: 295, maxM: 1250, minP: 0, maxP: 0 },
+    { art: "Art. 20", nome: "Resistenza a P.U.", minM: 0, maxM: 0, minP: 0, maxP: 30 },
+    { art: "Art. 21", nome: "Interruzione Pubblico Servizio", minM: 0, maxM: 0, minP: 0, maxP: 45 },
+    { art: "Art. 22", nome: "Inquinamento", minM: 80, maxM: 500, minP: 0, maxP: 0 },
+    { art: "Art. 23 c.1", nome: "Sostanze stupefacenti", minM: 150, maxM: 4500, minP: 0, maxP: 55 },
+    { art: "Art. 23 c.1-agg", nome: "Spaccio (>1 stack)", minM: 600, maxM: 15000, minP: 0, maxP: 120 },
+    { art: "Art. 23 c.2", nome: "Sostanze nocive/letali", minM: 30, maxM: 450, minP: 0, maxP: 15 },
+    { art: "Art. 24", nome: "Vilipendio allo Stato", minM: 0, maxM: 0, minP: 9999, maxP: 9999 },
+    { art: "Art. 25", nome: "Oltraggio a P.U.", minM: 0, maxM: 2000, minP: 0, maxP: 15 },
+    { art: "Art. 26", nome: "Terrorismo", minM: 0, maxM: 295000, minP: 3000, maxP: 99999 },
+    { art: "Art. 27", nome: "Falso Ideologico", minM: 0, maxM: 3000, minP: 0, maxP: 75 },
+    { art: "Art. 28", nome: "Truffa", minM: 0, maxM: 1000, minP: 15, maxP: 60 },
+    { art: "Art. 29", nome: "Peculato", minM: 0, maxM: 4000, minP: 60, maxP: 130 },
+    { art: "Art. 30", nome: "Omissione atti al Governo", minM: 25, maxM: 6500, minP: 0, maxP: 30 },
+    { art: "Art. 31", nome: "Abuso di potere", minM: 0, maxM: 1000, minP: 0, maxP: 25 },
+    { art: "Art. 32", nome: "Omissioni atti d’ufficio", minM: 300, maxM: 4950, minP: 5, maxP: 20 },
+    { art: "Art. 34", nome: "Estorsione", minM: 150, maxM: 15800, minP: 5, maxP: 60 },
+    { art: "Art. 35", nome: "Ricettazione", minM: 10, maxM: 3850, minP: 0, maxP: 30 },
+    { art: "Art. 36", nome: "Atti persecutori", minM: 150, maxM: 3000, minP: 0, maxP: 15 },
+    { art: "Art. 37", nome: "Corruzione", minM: 0, maxM: 13950, minP: 0, maxP: 60 },
+    { art: "Art. 38", nome: "Favoreggiamento", minM: 0, maxM: 3000, minP: 0, maxP: 20 },
+    { art: "Art. 39", nome: "Falsa testimonianza", minM: 0, maxM: 5000, minP: 0, maxP: 10 },
+    { art: "Art. 40", nome: "Distruzione bene governativo", minM: 0, maxM: 0, minP: 0, maxP: 0 },
+    { art: "Art. 41", nome: "Contraffazione banconote governative", minM: 0, maxM: 0, minP: 0, maxP: 0 },
+    { art: "Art. 42", nome: "Contraffazione denaro", minM: 0, maxM: 0, minP: 3, maxP: 25 }
+];
+
+    function renderCrimes() {
+        const container = document.getElementById('crimeContainer');
+        container.innerHTML = database.map((c, index) => `
+            <div class="crime-item">
+                <input type="checkbox" id="crime-${index}" onchange="calculate()">
+                <div class="crime-details">
+                    <div class="art-title">${c.art} - ${c.nome}</div>
+                    <div class="desc">${c.desc}</div>
+                    <div class="pena-info">Pena: ${c.minP}-${c.maxP} min | Multa: €${c.minM}-${c.maxM}</div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function calculate() {
+        let minP = 0, maxP = 0, minM = 0, maxM = 0;
+        let selected = [];
+
+        database.forEach((c, index) => {
+            if (document.getElementById(`crime-${index}`).checked) {
+                minP += c.minP; maxP += c.maxP;
+                minM += c.minM; maxM += c.maxM;
+                selected.push(c.art);
+            }
+        });
+
+        document.getElementById('minPena').innerText = minP;
+        document.getElementById('maxPena').innerText = maxP;
+        document.getElementById('minMulta').innerText = minM.toLocaleString();
+        document.getElementById('maxMulta').innerText = maxM.toLocaleString();
+        
+        document.getElementById('summaryList').innerText = selected.length > 0 
+            ? "Reati: " + selected.join(", ") 
+            : "Nessun reato selezionato.";
+            
+        if(minP >= 9999) document.getElementById('minPena').innerText = "MORTE";
+    }
+
+    function filterCrimes() {
+        const query = document.getElementById('searchBar').value.toLowerCase();
+        const items = document.querySelectorAll('.crime-item');
+        items.forEach((item, index) => {
+            const text = database[index].nome.toLowerCase() + database[index].art.toLowerCase();
+            item.style.display = text.includes(query) ? 'flex' : 'none';
+        });
+    }
+
+    function resetAll() {
+        document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+        calculate();
+    }
+
+    renderCrimes();
+</script>
+
+</body>
+</html>
