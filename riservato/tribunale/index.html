@@ -3,12 +3,35 @@
 <head>
 <meta charset="UTF-8">
 <link rel="stylesheet" href="css1.css">
-<title>Errore</title>
+<title>Giustizia di CipoCity</title>
+
+<script>
+const utentiValidi = ["Mr_Sthag", "syb_4522"];
+const passwordCorretta = "tribu123";
+
+const username = prompt("Inserisci username:");
+const password = prompt("Inserisci password:");
+
+if (
+    !utentiValidi.includes(username) ||
+    password !== passwordCorretta
+) {
+    window.location.href = "./../index.html";
+}
+</script>
+
 <style>
 </style>
 </head>
 <body>
-    <h1>Errore</h1>
+
+    <h1>Giustizia di CipoCity</h1>
+
+    <a href="analizzatorereati.html">Analizzatore reati / calcola pene</a>
+    <a href="avvisogaranzia.html">Avviso di garanzia</a>
+    <a href="generanumerocaso.html">Genera numero del caso</a>
+    <a href="generadocumenti.html">Genera documenti del tribunale di cipocity</a>
+
     <a href="./../index.html">Torna alla homepage</a>
 
 </body>
