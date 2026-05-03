@@ -21,18 +21,33 @@ if (
 </script>
 
 <style>
+body {
+    font-family: Arial, sans-serif;
+}
+
+.lista-link {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.lista-link a {
+    width: fit-content;
+}
 </style>
 </head>
 <body>
 
     <h1>Giustizia di CipoCity</h1>
 
-    <a href="analizzatorereati.html">Analizzatore reati / calcola pene</a>
-    <a href="avvisogaranzia.html">Avviso di garanzia</a>
-    <a href="generanumerocaso.html">Genera numero del caso</a>
-    <a href="generadocumenti.html">Genera documenti del tribunale di cipocity</a>
-
-    <a href="./../index.html">Torna alla homepage</a>
+    <div class="lista-link">
+        <a href="analizzatorereati.html">Analizzatore reati / calcola pene</a>
+        <a href="avvisogaranzia.html">Avviso di garanzia</a>
+        <a href="generanumerocaso.html">Genera numero del caso</a>
+        <a href="generadocumenti.html">Genera documenti del tribunale di cipocity</a>
+        <a href="./../index.html">Torna alla homepage</a>
+    </div>
 
 </body>
 </html>
