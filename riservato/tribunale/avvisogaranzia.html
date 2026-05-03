@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Avviso di Garanzia - Tribunale di Cipocity</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+<style>
+    body{
+        margin:0;
+        padding:20px;
+        background:#d7d7d7;
+        font-family:"Times New Roman", serif;
+    }
+
+    .panel{
+        width:900px;
+        margin:auto;
+        background:white;
+        padding:20px;
+        border-radius:8px;
+        box-shadow:0 0 10px rgba(0,0,0,0.2);
+        margin-bottom:20px;
+    }
+
+    .panel input,
+    .panel select{
+        width:100%;
+        padding:10px;
+        margin-top:5px;
+        margin-bottom:15px;
+        font-size:16px;
+        box-sizing:border-box;
+    }
+
+    .panel button{
+        padding:12px 18px;
+        border:none;
+        background:#111;
+        color:white;
+        cursor:pointer;
+        font-size:15px;
+        margin-right:10px;
+    }
+
+    #documento{
+        width:794px;
+        min-height:1123px;
+        margin:auto;
+        background:white;
+        color:#111;
+        padding:55px;
+        box-sizing:border-box;
+        border:1px solid #000;
+        position:relative;
+    }
+
+    .header{
+        text-align:center;
+        margin-bottom:35px;
+    }
+
+    .header h1{
+        margin:0;
+        font-size:28px;
+        text-transform:uppercase;
+    }
+
+    .header h2{
+        margin-top:5px;
+        font-size:18px;
+        font-weight:normal;
+    }
+
+    .protocollo{
+        margin-top:25px;
+        font-size:15px;
+    }
+
+    .titolo{
+        margin-top:35px;
+        margin-bottom:35px;
+        text-align:center;
+        font-size:24px;
+        font-weight:bold;
+        text-transform:uppercase;
+        border-top:2px solid black;
+        border-bottom:2px solid black;
+        padding:12px;
+    }
+
+    p{
+        text-align:justify;
+        line-height:1.7;
+        font-size:18px;
+    }
+
+    .section-title{
+        margin-top:35px;
+        margin-bottom:10px;
+        font-size:20px;
+        font-weight:bold;
+        text-transform:uppercase;
+        border-bottom:1px solid black;
+        padding-bottom:5px;
+    }
+
+    ul{
+        padding-left:22px;
+        line-height:1.7;
+        font-size:18px;
+    }
+
+    li{
+        margin-bottom:14px;
+    }
+
+    .firma-container{
+        margin-top:80px;
+        display:flex;
+        justify-content:space-between;
+        align-items:flex-end;
+    }
+
+    .firma-box{
+        width:300px;
+        text-align:center;
+    }
+
+    .linea{
+        margin-top:70px;
+        border-top:1px solid black;
+        padding-top:8px;
+    }
+
+    .footer{
+        margin-top:50px;
+        text-align:center;
+        font-size:13px;
+        color:#444;
+    }
+
+    @media print{
+        body{
+            background:white;
+            padding:0;
+        }
+
+        .panel{
+            display:none;
+        }
+
+        #documento{
+            border:none;
+            margin:0;
+            width:210mm;
+            min-height:297mm;
+        }
+    }
+</style>
+</head>
+<body>
+
+<div class="panel">
+
+    <label>Nome dell'indagato</label>
+    <input type="text" id="nome" placeholder="Nome e cognome">
+
+    <label>Firmatario</label>
+    <select id="ruolo">
+        <option>Pubblico Ministero</option>
+        <option>Giudice</option>
+        <option>Giudice della Corte Suprema</option>
+        <option>Autorità Giudiziaria</option>
+        <option>Ufficiale di Polizia Giudiziaria</option>
+    </select>
+
+    <label>Nome del firmatario</label>
+    <input type="text" id="firmatario" placeholder="Inserisci nome">
+
+    <button onclick="generaDocumento()">Genera Documento</button>
+    <button onclick="scaricaPDF()">Scarica PDF</button>
+
+</div>
+
+<div id="documento">
+
+    <div class="header">
+        <h1>Tribunale di Cipocity</h1>
+        <h2>Procura della Repubblica</h2>
+    </div>
+
+    <div class="protocollo">
+        <strong>Comunicazione n°:</strong>
+        <span id="protocollo"></span>
+        <br>
+        <strong>Data:</strong>
+        <span id="data"></span>
+        <br>
+        <strong>Ora:</strong>
+        <span id="ora"></span>
+    </div>
+
+    <div class="titolo">
+        Avviso di Garanzia
+    </div>
+
+    <p>
+        Il Tribunale di Cipocity comunica al Sig./Sig.ra
+        <strong><span id="nomeOutput">____________________</span></strong>
+        che risulta attualmente indagato/a in relazione ai fatti
+        di reato ipotizzati a suo carico.
+    </p>
+
+    <p>
+        Il presente avviso viene notificato ai sensi dell'art. 8
+        dei principi fondamentali del Codice Penale di Cipocity.
+    </p>
+
+    <div class="section-title">
+        Diritti dell'indagato
+    </div>
+
+    <ul>
+        <li>
+            Ha il diritto di nominare un difensore di fiducia.
+            Qualora non provveda alla nomina, le verrà assegnato
+            un difensore d'ufficio.
+        </li>
+
+        <li>
+            Ha il diritto di avvalersi della facoltà di non rispondere
+            a qualsiasi domanda che le venga posta oppure di rispondere
+            solo parzialmente.
+        </li>
+
+        <li>
+            Essendo venuto a conoscenza delle indagini a suo carico,
+            qualora venga instaurato un procedimento giudiziario,
+            questo potrà essere svolto anche in sua assenza.
+        </li>
+
+        <li>
+            Ha il diritto di presentare memorie, rendere dichiarazioni
+            alla Polizia Giudiziaria o al Tribunale e di impugnare
+            eventuali procedimenti instaurati a suo carico.
+        </li>
+    </ul>
+
+    <div class="section-title">
+        Obblighi dell'indagato
+    </div>
+
+    <ul>
+        <li>
+            È obbligato a presentarsi tempestivamente presso una caserma
+            della Polizia Giudiziaria per dichiarare il domicilio presso
+            il quale intende ricevere gli atti del procedimento.
+        </li>
+
+        <li>
+            Il domicilio per le notifiche potrà essere indicato tramite:
+            email, posta fisica di Cipocity a proprio carico,
+            Discord oppure mediante invio al proprio difensore.
+        </li>
+
+        <li>
+            Ha l'obbligo di presentarsi alle convocazioni
+            dell'Autorità Giudiziaria o della Polizia Giudiziaria.
+        </li>
+    </ul>
+
+    <div class="firma-container">
+
+        <div class="firma-box">
+            <div class="linea">
+                Firma dell'Autorità
+                <br><br>
+                <strong id="ruoloOutput"></strong>
+                <br>
+                <span id="firmatarioOutput"></span>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="footer">
+        Documento generato elettronicamente dal sistema del Tribunale di Cipocity
+    </div>
+
+</div>
+
+<script>
+
+function generaNumeroProtocollo(date){
+
+    const y = date.getFullYear();
+
+    const m = String(date.getMonth() + 1).padStart(2,'0');
+
+    const d = String(date.getDate()).padStart(2,'0');
+
+    const h = String(date.getHours()).padStart(2,'0');
+
+    const min = String(date.getMinutes()).padStart(2,'0');
+
+    const s = String(date.getSeconds()).padStart(2,'0');
+
+    return `TCP-${y}${m}${d}-${h}${min}${s}`;
+}
+
+function generaDocumento(){
+
+    const nome = document.getElementById("nome").value.trim();
+
+    const ruolo = document.getElementById("ruolo").value;
+
+    const firmatario = document.getElementById("firmatario").value.trim();
+
+    if(nome === ""){
+        alert("Inserisci il nome dell'indagato");
+        return;
+    }
+
+    if(firmatario === ""){
+        alert("Inserisci il nome del firmatario");
+        return;
+    }
+
+    const now = new Date();
+
+    const data = now.toLocaleDateString("it-IT");
+
+    const ora = now.toLocaleTimeString("it-IT");
+
+    const protocollo = generaNumeroProtocollo(now);
+
+    document.getElementById("nomeOutput").textContent = nome;
+
+    document.getElementById("data").textContent = data;
+
+    document.getElementById("ora").textContent = ora;
+
+    document.getElementById("protocollo").textContent = protocollo;
+
+    document.getElementById("ruoloOutput").textContent = ruolo;
+
+    document.getElementById("firmatarioOutput").textContent = firmatario;
+}
+
+function scaricaPDF(){
+
+    const element = document.getElementById("documento");
+
+    const opt = {
+
+        margin: [0,0,0,0],
+
+        filename: 'Avviso_Garanzia_Cipocity.pdf',
+
+        image: {
+            type: 'jpeg',
+            quality: 1
+        },
+
+        html2canvas: {
+            scale: 2,
+            scrollY: 0
+        },
+
+        jsPDF: {
+            unit: 'mm',
+            format: 'a4',
+            orientation: 'portrait'
+        },
+
+        pagebreak: {
+            mode: ['avoid-all']
+        }
+    };
+
+    html2pdf().set(opt).from(element).save();
+}
+
+window.onload = generaDocumento;
+
+</script>
+
+</body>
+</html>
