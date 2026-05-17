@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>Sistema Sanitario Nazionale di CipoCity</title>
+<title>Test Sindromi Adattivo</title>
+
+        <p>QUESTA E' UNA PAGINA RISERVATA<p>
+    <a href="./../index.html">Torna alla homepage</a>
+    <a href="./../moduloarresti.html">Visita il modulo arresti</a>
+
+
+</head>
+<body>
+
+<h2>Test Sindromi Adattivo</h2>
+
+<div id="box"></div>
+
+<button onclick="next()">Avanti</button>
+
+<pre id="out"></pre>
+
+<script>
+let scores = {}
+
+let syndromes = [
+"Kessler-Parrin","Varkov","Heller","Rehfeld","Kralov","Belmonte",
+"Vortek","Falke","Vensler","Brant","Velker","Lattice Inverso",
+"Ferland","Krovic","Kres","Midollo Cavo","Ovulazione Fantasma",
+"Colon Riflesso","Eco Circolatorio","Eco Cranico","Halev","Kervan",
+"Larenz","Kres (oppioide)","Marlev","Korvin"
+]
+
+syndromes.forEach(s=>scores[s]=0)
+
+let q1 = {
+"Kessler-Parrin":"Ti senti osservato?",
+"Varkov":"Il tempo ti sembra alterato?",
+"Heller":"Hai sensazioni ai denti?",
+"Rehfeld":"Dolore addominale senza causa?",
+"Kralov":"Percepisci il tuo corpo internamente?",
+"Belmonte":"La realtà sembra instabile?",
+"Vortek":"Senti il respiro amplificato?",
+"Falke":"Sensazioni strane sulla pelle?",
+"Vensler":"Senti il sangue in modo anomalo?",
+"Brant":"Ansia sociale intensa?",
+"Velker":"Eviti il contatto visivo?",
+"Lattice Inverso":"Perdi spesso oggetti?",
+"Ferland":"Confondi sogni e realtà?",
+"Krovic":"Hai vuoti mentali?",
+"Kres":"Senti la gola chiusa?",
+"Midollo Cavo":"Senti vuoto nelle ossa?",
+"Ovulazione Fantasma":"Dolori senza causa?",
+"Colon Riflesso":"Senti la digestione troppo?",
+"Eco Circolatorio":"Senti il battito interno?",
+"Eco Cranico":"Senti pensieri come voce?",
+"Halev":"Hai tremori alle palpebre?",
+"Kervan":"Hai tic facciali?",
+"Larenz":"Tossi per emozioni?",
+"Kres (oppioide)":"Respirazione rallentata?",
+"Marlev":"Scricchiolii scheletrici?",
+"Korvin":"Articolazioni sensibili?"
+}
+
+let q2 = {
+"Kessler-Parrin":"Ti senti controllato da presenze esterne?",
+"Varkov":"Il tempo cambia velocità improvvisamente?",
+"Heller":"Le sensazioni ai denti aumentano sotto stress?",
+"Rehfeld":"Il dolore addominale è ciclico?",
+"Kralov":"Le emozioni influenzano l’intestino?",
+"Belmonte":"Il pavimento sembra muoversi?",
+"Vortek":"Senti eco del tuo respiro nella testa?",
+"Falke":"La pelle reagisce senza motivo?",
+"Vensler":"Il corpo sembra pesante internamente?",
+"Brant":"Eviti situazioni sociali attivamente?",
+"Velker":"Il contatto visivo crea disagio forte?",
+"Lattice Inverso":"Gli oggetti scompaiono nei momenti critici?",
+"Ferland":"Hai episodi di irrealtà?",
+"Krovic":"Hai blackout improvvisi?",
+"Kres":"La respirazione peggiora con ansia?",
+"Midollo Cavo":"Senti il corpo “vuoto” in movimento?",
+"Ovulazione Fantasma":"I sintomi cambiano senza motivo?",
+"Colon Riflesso":"L’intestino reagisce alle emozioni?",
+"Eco Circolatorio":"Senti pulsazioni interne costanti?",
+"Eco Cranico":"I pensieri sembrano esterni?",
+"Halev":"I tremori aumentano con la tensione?",
+"Kervan":"I tic aumentano sotto stress?",
+"Larenz":"La tosse è emotiva?",
+"Kres (oppioide)":"Ti senti sedato?",
+"Marlev":"Le ossa scricchiolano spesso?",
+"Korvin":"Le articolazioni reagiscono al movimento?"
+}
+
+let q3 = {
+"Kessler-Parrin":"La sensazione di essere osservato è costante?",
+"Varkov":"La percezione del tempo è instabile?",
+"Heller":"I sintomi dentali sono continui?",
+"Rehfeld":"Il dolore è persistente?",
+"Kralov":"Il corpo risponde sempre alle emozioni?",
+"Belmonte":"La stabilità percettiva è compromessa?",
+"Vortek":"L’eco interna è continua?",
+"Falke":"La pelle è costantemente sensibile?",
+"Vensler":"La percezione interna è alterata sempre?",
+"Brant":"L’ansia sociale è costante?",
+"Velker":"Il contatto visivo è sempre difficile?",
+"Lattice Inverso":"La disorganizzazione è continua?",
+"Ferland":"La confusione realtà/sogno è frequente?",
+"Krovic":"I blackout sono ripetuti?",
+"Kres":"La respirazione è sempre alterata?",
+"Midollo Cavo":"Il vuoto interno è persistente?",
+"Ovulazione Fantasma":"I sintomi sono continui?",
+"Colon Riflesso":"La digestione è sempre percepita?",
+"Eco Circolatorio":"Il battito è sempre percepito?",
+"Eco Cranico":"La voce mentale è costante?",
+"Halev":"I tremori sono continui?",
+"Kervan":"I tic sono continui?",
+"Larenz":"La tosse è continua?",
+"Kres (oppioide)":"La sedazione è costante?",
+"Marlev":"Gli scricchiolii sono continui?",
+"Korvin":"La sensibilità articolare è costante?"
+}
+
+let stage = 1
+let list = Object.keys(q1)
+let index = 0
+
+function show(){
+let s = list[index]
+let q =
+stage === 1 ? q1[s] :
+stage === 2 ? q2[s] :
+q3[s]
+
+document.getElementById("box").innerHTML =
+"<b>"+s+"</b><br>"+q+"<br><button onclick='ans(1)'>Sì</button><button onclick='ans(0)'>No</button>"
+}
+
+function ans(v){
+scores[list[index]] += v
+index++
+
+if(index >= list.length){
+nextStage()
+}else show()
+}
+
+function nextStage(){
+let sorted = Object.entries(scores).sort((a,b)=>b[1]-a[1])
+
+if(stage === 1){
+list = sorted.slice(0,5).map(x=>x[0])
+stage = 2
+index = 0
+show()
+return
+}
+
+if(stage === 2){
+list = sorted.slice(0,2).map(x=>x[0])
+stage = 3
+index = 0
+show()
+return
+}
+
+finish()
+}
+
+function finish(){
+let total = Object.values(scores).reduce((a,b)=>a+b,0)
+let out = ""
+
+Object.entries(scores)
+.sort((a,b)=>b[1]-a[1])
+.forEach(s=>{
+let p = total ? (s[1]/total*100).toFixed(2) : 0
+out += s[0]+": "+p+"%\n"
+})
+
+document.getElementById("box").innerHTML=""
+document.getElementById("out").innerText=out
+}
+
+show()
+</script>
+
+</body>
+</html>
