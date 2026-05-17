@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DocEditor Pro</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono&display=swap');
+:root{--bg:#f0ede8;--paper:#fffef9;--ink:#1a1a18;--accent:#c8372d;--accent2:#1a5276;--toolbar:#1e1e1c;--toolbar-text:#e8e4dc;--border:#d4cfc5;--shadow:rgba(0,0,0,.12);--muted:#7a7568}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
+
+/* LOGIN */
+#login-overlay{position:fixed;inset:0;background:linear-gradient(135deg,#1a1a18 0%,#2c2c28 50%,#1a3a5c 100%);display:flex;align-items:center;justify-content:center;z-index:9999}
+.login-box{background:var(--paper);border-radius:2px;padding:56px 48px;width:420px;box-shadow:0 32px 80px rgba(0,0,0,.5);position:relative;overflow:hidden}
+.login-box::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--accent)}
+.login-logo{font-family:'Playfair Display',serif;font-size:28px;color:var(--ink);margin-bottom:8px;letter-spacing:-.5px}
+.login-logo span{color:var(--accent)}
+.login-subtitle{font-size:13px;color:var(--muted);margin-bottom:40px;font-weight:300;letter-spacing:.5px;text-transform:uppercase}
+.login-field{margin-bottom:20px}
+.login-field label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px}
+.login-field input{width:100%;padding:13px 16px;border:1.5px solid var(--border);background:#fafaf7;font-family:'IBM Plex Sans',sans-serif;font-size:15px;color:var(--ink);border-radius:2px;outline:none;transition:border-color .2s}
+.login-field input:focus{border-color:var(--accent2);background:#fff}
+.login-btn{width:100%;padding:14px;background:var(--toolbar);color:var(--toolbar-text);font-family:'IBM Plex Sans',sans-serif;font-size:14px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;border:none;border-radius:2px;cursor:pointer;margin-top:8px;transition:background .2s}
+.login-btn:hover{background:var(--accent)}
+.login-error{color:var(--accent);font-size:12px;margin-top:12px;text-align:center;display:none}
+
+/* APP */
+#app{display:none;flex-direction:column;height:100vh}
+.app-header{background:var(--toolbar);padding:10px 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #333}
+.app-title{font-family:'Playfair Display',serif;color:var(--toolbar-text);font-size:18px;letter-spacing:-.3px}
+.app-title span{color:var(--accent)}
+.user-badge{display:flex;align-items:center;gap:12px;font-size:12px;color:#aaa}
+.user-badge strong{color:var(--toolbar-text)}
+.logout-btn{background:transparent;border:1px solid #555;color:#aaa;font-size:11px;padding:4px 12px;border-radius:2px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;text-transform:uppercase;letter-spacing:.5px;transition:all .2s}
+.logout-btn:hover{border-color:var(--accent);color:var(--accent)}
+#doc-title-input{background:transparent;border:none;outline:none;color:var(--toolbar-text);font-family:'IBM Plex Sans',sans-serif;font-size:13px;width:240px;border-bottom:1px solid #555;padding:2px 4px}
+#doc-title-input::placeholder{color:#666}
+
+/* TOOLBAR */
+.toolbar{background:#2a2a27;padding:6px 12px;display:flex;align-items:center;gap:2px;flex-wrap:wrap;border-bottom:1px solid #444}
+.tb-sep{width:1px;height:22px;background:#444;margin:0 5px}
+.tb-btn{background:transparent;border:none;color:#ccc;padding:5px 7px;border-radius:3px;cursor:pointer;font-size:13px;font-family:'IBM Plex Sans',sans-serif;font-weight:500;transition:all .15s;min-width:28px;text-align:center;line-height:1}
+.tb-btn:hover{background:#3a3a37;color:#fff}
+.tb-select{background:#3a3a37;border:none;color:#ccc;padding:4px 6px;border-radius:3px;font-family:'IBM Plex Sans',sans-serif;font-size:12px;cursor:pointer;outline:none}
+.tb-select:hover{background:#484844}
+.export-btn{background:var(--accent);border:none;color:#fff;padding:6px 16px;border-radius:3px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-left:auto;transition:background .2s}
+.export-btn:hover{background:#a82a22}
+
+/* RULER */
+.ruler{background:#e8e4de;height:22px;border-bottom:1px solid #ccc;overflow:hidden;position:relative}
+.ruler-inner{position:absolute;left:calc(50% - 397px);height:100%}
+
+/* PAGE */
+.page-area{flex:1;overflow-y:auto;background:#ddd9d3;padding:32px 0 64px;display:flex;flex-direction:column;align-items:center}
+.doc-page{background:var(--paper);width:794px;min-height:1122px;padding:96px 96px 96px 120px;box-shadow:0 4px 24px var(--shadow);position:relative;margin-bottom:24px}
+.page-number{position:absolute;bottom:40px;left:0;right:0;text-align:center;font-size:11px;color:#bbb;font-family:'IBM Plex Mono',monospace}
+
+/* EDITOR */
+#editor{outline:none;min-height:930px;font-family:'IBM Plex Sans',sans-serif;font-size:12pt;line-height:1.8;color:var(--ink);caret-color:var(--accent2);word-break:break-word}
+#editor p{margin-bottom:8px}
+#editor h1{font-family:'Playfair Display',serif;font-size:26pt;margin-bottom:16px;color:#111}
+#editor h2{font-family:'Playfair Display',serif;font-size:18pt;margin-bottom:12px}
+#editor h3{font-size:14pt;font-weight:600;margin-bottom:10px}
+#editor ul,#editor ol{padding-left:32px;margin-bottom:8px}
+#editor blockquote{border-left:3px solid var(--accent);padding-left:16px;color:var(--muted);margin:16px 0;font-style:italic}
+#editor table{border-collapse:collapse;width:100%;margin-bottom:12px}
+#editor td,#editor th{border:1px solid #ccc;padding:6px 10px;font-size:11pt}
+#editor th{background:#f0ede8;font-weight:600}
+
+/* STATUS */
+.status-bar{background:var(--toolbar);padding:4px 24px;display:flex;gap:24px;font-size:11px;color:#888;font-family:'IBM Plex Mono',monospace;border-top:1px solid #333}
+
+/* TOAST */
+.toast{position:fixed;bottom:40px;right:40px;background:#1e3a5c;color:#fff;padding:14px 24px;border-radius:4px;font-size:13px;font-weight:500;box-shadow:0 8px 32px rgba(0,0,0,.3);transform:translateY(80px);opacity:0;transition:all .3s;z-index:999}
+.toast.show{transform:translateY(0);opacity:1}
+.page-area::-webkit-scrollbar{width:8px}
+.page-area::-webkit-scrollbar-track{background:#ccc9c3}
+.page-area::-webkit-scrollbar-thumb{background:#aaa;border-radius:4px}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-overlay">
+  <div class="login-box">
+    <div class="login-logo">Doc<span>Editor</span> Pro</div>
+    <div class="login-subtitle">Sistema di redazione documenti</div>
+    <div class="login-field">
+      <label>Nome utente</label>
+      <input type="text" id="login-user" placeholder="es. Mario Rossi">
+    </div>
+    <div class="login-field">
+      <label>Impresa / Organizzazione</label>
+      <input type="text" id="login-company" placeholder="es. Rossi &amp; Associati S.r.l.">
+    </div>
+    <button class="login-btn" onclick="doLogin()">Accedi all'editor</button>
+    <div class="login-error" id="login-error">Compila tutti i campi per continuare.</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="app-header">
+    <div style="display:flex;align-items:center;gap:20px">
+      <div class="app-title">Doc<span>Editor</span> Pro</div>
+      <input type="text" id="doc-title-input" placeholder="Titolo documento..." value="Documento senza titolo">
+    </div>
+    <div class="user-badge">
+      <span>👤 <strong id="hdr-user"></strong> &mdash; <span id="hdr-company"></span></span>
+      <button class="logout-btn" onclick="doLogout()">Esci</button>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <select class="tb-select" onchange="execFmt('formatBlock',this.value);this.value='p'">
+      <option value="p">Paragrafo</option>
+      <option value="h1">Titolo 1</option>
+      <option value="h2">Titolo 2</option>
+      <option value="h3">Titolo 3</option>
+    </select>
+    <select class="tb-select" onchange="execCmd('fontName',this.value)">
+      <option value="'IBM Plex Sans',sans-serif">IBM Plex Sans</option>
+      <option value="'Playfair Display',serif">Playfair</option>
+      <option value="Georgia,serif">Georgia</option>
+      <option value="'Courier New',monospace">Courier</option>
+      <option value="Arial,sans-serif">Arial</option>
+    </select>
+    <select class="tb-select" onchange="execCmd('fontSize',this.value)">
+      <option value="">Dim.</option>
+      <option value="1">8</option>
+      <option value="2">10</option>
+      <option value="3">12</option>
+      <option value="4">14</option>
+      <option value="5">18</option>
+      <option value="6">24</option>
+      <option value="7">36</option>
+    </select>
+    <div class="tb-sep"></div>
+    <button class="tb-btn" onclick="execCmd('bold')" title="Grassetto"><b>G</b></button>
+    <button class="tb-btn" onclick="execCmd('italic')" title="Corsivo"><i>C</i></button>
+    <button class="tb-btn" onclick="execCmd('underline')" title="Sottolineato"><u>S</u></button>
+    <button class="tb-btn" onclick="execCmd('strikeThrough')" title="Barrato"><s>T</s></button>
+    <button class="tb-btn" onclick="execCmd('superscript')" title="Apice">x²</button>
+    <button class="tb-btn" onclick="execCmd('subscript')" title="Pedice">x₂</button>
+    <div class="tb-sep"></div>
+    <button class="tb-btn" title="Colore testo" onclick="document.getElementById('clr-fg').click()">A🎨</button>
+    <input type="color" id="clr-fg" style="display:none" value="#c8372d" onchange="execCmd('foreColor',this.value)">
+    <button class="tb-btn" title="Evidenzia" onclick="document.getElementById('clr-bg').click()">🖌</button>
+    <input type="color" id="clr-bg" style="display:none" value="#ffff00" onchange="execCmd('hiliteColor',this.value)">
+    <div class="tb-sep"></div>
+    <button class="tb-btn" onclick="execCmd('justifyLeft')" title="Sinistra">⬅</button>
+    <button class="tb-btn" onclick="execCmd('justifyCenter')" title="Centra">≡</button>
+    <button class="tb-btn" onclick="execCmd('justifyRight')" title="Destra">➡</button>
+    <button class="tb-btn" onclick="execCmd('justifyFull')" title="Giustifica">☰</button>
+    <div class="tb-sep"></div>
+    <button class="tb-btn" onclick="execCmd('insertUnorderedList')" title="Elenco •">•—</button>
+    <button class="tb-btn" onclick="execCmd('insertOrderedList')" title="Elenco num.">1.</button>
+    <button class="tb-btn" onclick="execCmd('indent')" title="Rientro">→</button>
+    <button class="tb-btn" onclick="execCmd('outdent')" title="Rimuovi rientro">←</button>
+    <div class="tb-sep"></div>
+    <button class="tb-btn" onclick="insertBlockquote()" title="Citazione">❝</button>
+    <button class="tb-btn" onclick="execCmd('insertHorizontalRule')" title="Linea">─</button>
+    <button class="tb-btn" onclick="insertTable()" title="Tabella">⊞</button>
+    <button class="tb-btn" onclick="insertLink()" title="Link">🔗</button>
+    <div class="tb-sep"></div>
+    <button class="tb-btn" onclick="execCmd('undo')" title="Annulla">↩</button>
+    <button class="tb-btn" onclick="execCmd('redo')" title="Ripeti">↪</button>
+    <button class="tb-btn" onclick="execCmd('removeFormat')" title="Rimuovi formattazione">✗</button>
+    <div class="tb-sep"></div>
+    <button class="tb-btn" onclick="window.print()" title="Stampa">🖨</button>
+    <button class="export-btn" onclick="exportPDF()">⬇ Esporta PDF</button>
+  </div>
+
+  <div class="ruler"><div class="ruler-inner" id="ruler-inner"></div></div>
+
+  <div class="page-area">
+    <div class="doc-page">
+      <div id="editor" contenteditable="true" spellcheck="true">
+        <h1>Nuovo Documento</h1>
+        <p>Inizia a scrivere il tuo documento qui. Usa la barra degli strumenti per formattare il testo con <strong>grassetto</strong>, <em>corsivo</em>, <u>sottolineato</u> e molto altro.</p>
+        <p>&nbsp;</p>
+        <p>Puoi inserire elenchi, tabelle, citazioni e cambiare il font, la dimensione e il colore del testo.</p>
+        <p>&nbsp;</p>
+      </div>
+      <div class="page-number">— 1 —</div>
+    </div>
+  </div>
+
+  <div class="status-bar">
+    <span id="sb-words">Parole: 0</span>
+    <span id="sb-chars">Caratteri: 0</span>
+    <span id="sb-session"></span>
+    <span id="sb-time"></span>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let currentUser='', currentCompany='', loginTime=null;
+
+// LOGIN
+function doLogin(){
+  const u=document.getElementById('login-user').value.trim();
+  const c=document.getElementById('login-company').value.trim();
+  if(!u||!c){document.getElementById('login-error').style.display='block';return;}
+  currentUser=u; currentCompany=c; loginTime=new Date();
+  document.getElementById('login-overlay').style.display='none';
+  document.getElementById('app').style.display='flex';
+  document.getElementById('hdr-user').textContent=u;
+  document.getElementById('hdr-company').textContent=c;
+  document.getElementById('sb-session').textContent=u+' · '+c;
+  buildRuler(); startClock(); updateWordCount();
+  showToast('Benvenuto, '+u+'! 👋');
+}
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&document.getElementById('login-overlay').style.display!=='none') doLogin();
+});
+
+function doLogout(){
+  if(!confirm('Uscire dall\'editor? Le modifiche non salvate verranno perse.')) return;
+  document.getElementById('login-overlay').style.display='flex';
+  document.getElementById('app').style.display='none';
+  document.getElementById('login-user').value='';
+  document.getElementById('login-company').value='';
+  currentUser=''; currentCompany=''; loginTime=null;
+}
+
+// EDITOR
+function execCmd(cmd,val=null){document.getElementById('editor').focus();document.execCommand(cmd,false,val);}
+function execFmt(cmd,val){document.getElementById('editor').focus();document.execCommand(cmd,false,'<'+val+'>');}
+function insertBlockquote(){execCmd('formatBlock','blockquote');}
+function insertLink(){const u=prompt('URL:');if(u)execCmd('createLink',u);}
+function insertTable(){
+  const t='<table><tr><th>Colonna 1</th><th>Colonna 2</th><th>Colonna 3</th></tr>'
+          +'<tr><td>Dati</td><td>Dati</td><td>Dati</td></tr>'
+          +'<tr><td>Dati</td><td>Dati</td><td>Dati</td></tr></table><p>&nbsp;</p>';
+  execCmd('insertHTML',t);
+}
+
+// Conteggio parole
+function updateWordCount(){
+  const txt=document.getElementById('editor').innerText||'';
+  const w=txt.trim()?txt.trim().split(/\s+/).length:0;
+  document.getElementById('sb-words').textContent='Parole: '+w;
+  document.getElementById('sb-chars').textContent='Caratteri: '+txt.length;
+}
+document.getElementById('editor').addEventListener('input',updateWordCount);
+
+// Orologio
+function startClock(){
+  const el=document.getElementById('sb-time');
+  setInterval(()=>{el.textContent=new Date().toLocaleString('it-IT');},1000);
+  el.textContent=new Date().toLocaleString('it-IT');
+}
+
+// Righello
+function buildRuler(){
+  const r=document.getElementById('ruler-inner');
+  r.style.position='relative'; r.style.width='794px'; r.style.height='22px';
+  for(let i=0;i<=794;i+=10){
+    const m=document.createElement('div');
+    m.style.cssText=`position:absolute;left:${i}px;bottom:0;width:1px;background:#aaa;height:${i%100===0?14:i%50===0?10:6}px`;
+    r.appendChild(m);
+    if(i%100===0&&i>0){
+      const lb=document.createElement('span');
+      lb.style.cssText=`position:absolute;left:${i+2}px;bottom:14px;font-size:9px;color:#999;font-family:monospace`;
+      lb.textContent=Math.round(i*0.264)+'mm';
+      r.appendChild(lb);
+    }
+  }
+}
+
+// Toast
+function showToast(msg,ms=3500){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),ms);
+}
+
+// ─── EXPORT PDF con METADATI NASCOSTI ───
+async function exportPDF(){
+  if(!currentUser){alert('Effettua il login prima.');return;}
+  showToast('⏳ Generazione PDF in corso…',8000);
+
+  const {jsPDF}=window.jspdf;
+  const exportTime=new Date();
+  const docTitle=document.getElementById('doc-title-input').value||'Documento';
+  const editorEl=document.getElementById('editor');
+
+  // Snapshot HTML
+  const canvas=await html2canvas(editorEl,{
+    scale:2, useCORS:true, backgroundColor:'#fffef9',
+    width:editorEl.scrollWidth, height:editorEl.scrollHeight
+  });
+
+  const pdf=new jsPDF({orientation:'portrait',unit:'pt',format:'a4'});
+  const pageW=pdf.internal.pageSize.getWidth();
+  const pageH=pdf.internal.pageSize.getHeight();
+  const margin=56;
+  const contentW=pageW-margin*2;
+  const ratio=contentW/canvas.width;
+  const renderedH=canvas.height*ratio;
+
+  // Paginazione
+  let posY=0, page=0;
+  while(posY<renderedH){
+    if(page>0) pdf.addPage();
+    const sliceH=Math.min(pageH-margin*2,renderedH-posY);
+    const sc=document.createElement('canvas');
+    sc.width=canvas.width;
+    sc.height=Math.round(sliceH/ratio);
+    sc.getContext('2d').drawImage(canvas,0,Math.round(posY/ratio),canvas.width,sc.height,0,0,canvas.width,sc.height);
+    pdf.addImage(sc.toDataURL('image/jpeg',0.92),'JPEG',margin,margin,contentW,sliceH);
+    posY+=sliceH; page++;
+  }
+
+  // ════════════════════════════════════════════
+  // METADATI NASCOSTI — struttura completa
+  // ════════════════════════════════════════════
+  const hiddenPayload={
+    // Chi ha creato il documento
+    autore: currentUser,
+    impresa: currentCompany,
+    // Timestamp precisi
+    loginTimestamp: loginTime?loginTime.toISOString():null,
+    exportTimestamp: exportTime.toISOString(),
+    exportData: exportTime.toLocaleDateString('it-IT',{weekday:'long',year:'numeric',month:'long',day:'numeric'}),
+    exportOra: exportTime.toLocaleTimeString('it-IT'),
+    // Info documento
+    titoloDocumento: docTitle,
+    // Info ambiente (raccolte al momento dell'export)
+    browser: navigator.userAgent,
+    lingua: navigator.language,
+    piattaforma: navigator.platform,
+    fuso_orario: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    offset_utc: -(new Date().getTimezoneOffset()/60)+'h',
+    risoluzione_schermo: screen.width+'x'+screen.height,
+    // Firma
+    generatoDa: 'DocEditor Pro v1.0'
+  };
+
+  // 1️⃣ Metadati standard PDF (visibili in "Proprietà documento")
+  pdf.setProperties({
+    title: docTitle,
+    subject: 'Documento redatto con DocEditor Pro',
+    author: currentUser,
+    keywords: '___META_ENCODED___'+btoa(unescape(encodeURIComponent(JSON.stringify(hiddenPayload)))),
+    creator: 'DocEditor Pro',
+    producer: 'DocEditor Pro — '+currentCompany
+  });
+
+  // 2️⃣ Testo bianco su bianco nella prima pagina (invisibile a occhio nudo)
+  pdf.setPage(1);
+  pdf.setFontSize(0.5);
+  pdf.setTextColor(255,255,255);
+  const encoded='DOCEDITOR_META::'+btoa(unescape(encodeURIComponent(JSON.stringify(hiddenPayload))));
+  pdf.text(encoded, 1, 1);
+
+  // 3️⃣ Nota nascosta come annotazione (colore quasi trasparente)
+  pdf.setFontSize(1);
+  pdf.setTextColor(254,254,254);
+  pdf.text('HIDDEN:'+JSON.stringify(hiddenPayload), 1, pageH-1);
+
+  const filename=docTitle.replace(/[^a-zA-Z0-9_\-\s]/g,'_').substring(0,40)+'.pdf';
+  pdf.save(filename);
+  showToast('✅ PDF salvato: '+filename,4000);
+}
+</script>
+</body>
+</html>

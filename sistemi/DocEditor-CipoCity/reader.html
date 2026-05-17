@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DocInspector — Lettore Metadati PDF</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+:root{
+  --bg:#0d0f0e;
+  --surface:#131615;
+  --surface2:#1a1e1c;
+  --border:#252a27;
+  --accent:#00d97e;
+  --accent2:#00a86b;
+  --warn:#f0a500;
+  --danger:#e84040;
+  --text:#e4ebe7;
+  --muted:#6b7c74;
+  --card:#161b18;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* HEADER */
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:20px 40px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-size:22px;font-weight:700;letter-spacing:-0.5px}
+.logo span{color:var(--accent)}
+.logo-sub{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-top:2px}
+.badge{background:var(--accent);color:#000;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:3px 10px;border-radius:20px}
+
+/* MAIN */
+.main{max-width:900px;margin:0 auto;padding:48px 24px}
+
+/* DROP ZONE */
+.drop-zone{
+  border:2px dashed var(--border);
+  border-radius:12px;
+  padding:64px 40px;
+  text-align:center;
+  cursor:pointer;
+  transition:all .3s;
+  background:var(--surface);
+  position:relative;
+  overflow:hidden;
+}
+.drop-zone::before{
+  content:'';
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse at 50% 0%,rgba(0,217,126,.05) 0%,transparent 70%);
+}
+.drop-zone:hover,.drop-zone.drag{border-color:var(--accent);background:rgba(0,217,126,.04)}
+.drop-icon{font-size:48px;margin-bottom:16px;display:block;filter:grayscale(0.3)}
+.drop-title{font-size:20px;font-weight:600;margin-bottom:8px;color:var(--text)}
+.drop-sub{font-size:13px;color:var(--muted);margin-bottom:24px}
+.choose-btn{
+  background:var(--accent);color:#000;border:none;
+  padding:11px 28px;border-radius:6px;font-family:'Space Grotesk',sans-serif;
+  font-size:14px;font-weight:700;cursor:pointer;letter-spacing:.5px;
+  transition:background .2s;
+}
+.choose-btn:hover{background:var(--accent2)}
+#file-input{display:none}
+
+/* PROGRESS */
+.progress-wrap{display:none;margin-top:24px;text-align:center}
+.progress-bar-outer{background:var(--border);border-radius:99px;height:4px;overflow:hidden;margin:16px 0}
+.progress-bar-inner{height:100%;background:var(--accent);border-radius:99px;width:0;transition:width .3s}
+.progress-label{font-size:13px;color:var(--muted)}
+
+/* RESULTS */
+#results{margin-top:40px;display:none}
+.result-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.result-title{font-size:24px;font-weight:700;letter-spacing:-.5px}
+.result-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;
+  padding:5px 12px;border-radius:20px;
+}
+.badge-found{background:rgba(0,217,126,.15);color:var(--accent);border:1px solid rgba(0,217,126,.3)}
+.badge-partial{background:rgba(240,165,0,.15);color:var(--warn);border:1px solid rgba(240,165,0,.3)}
+.badge-none{background:rgba(232,64,64,.15);color:var(--danger);border:1px solid rgba(232,64,64,.3)}
+
+/* CARDS */
+.section-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:12px;padding-left:2px}
+.cards-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:28px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px 22px;position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.card.green::before{background:var(--accent)}
+.card.yellow::before{background:var(--warn)}
+.card.blue::before{background:#4a90d9}
+.card.red::before{background:var(--danger)}
+.card-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:8px}
+.card-value{font-size:16px;font-weight:600;color:var(--text);word-break:break-word;line-height:1.4}
+.card-value.mono{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent)}
+.card.full{grid-column:1/-1}
+
+/* RAW TABLE */
+.raw-panel{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:28px}
+.raw-panel-header{background:var(--surface2);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+.raw-panel-title{font-size:13px;font-weight:600;color:var(--text)}
+table.meta-table{width:100%;border-collapse:collapse}
+table.meta-table tr{border-bottom:1px solid var(--border)}
+table.meta-table tr:last-child{border-bottom:none}
+table.meta-table tr:hover{background:rgba(0,217,126,.03)}
+table.meta-table td{padding:12px 20px;font-size:13px;vertical-align:top}
+table.meta-table td:first-child{color:var(--muted);width:200px;font-weight:500;font-size:12px;letter-spacing:.3px}
+table.meta-table td:last-child{color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;word-break:break-all}
+
+/* RAW JSON */
+.json-block{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#7ec8a0;overflow-x:auto;margin-bottom:28px;white-space:pre-wrap;word-break:break-all;max-height:300px;overflow-y:auto}
+
+/* STATUS */
+.status-none{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:40px;text-align:center;color:var(--muted);margin-bottom:28px}
+.status-none strong{display:block;font-size:16px;margin-bottom:8px;color:var(--text)}
+
+/* SCAN another */
+.scan-again{background:transparent;border:1px solid var(--border);color:var(--muted);padding:10px 22px;border-radius:6px;font-family:'Space Grotesk',sans-serif;font-size:13px;cursor:pointer;transition:all .2s}
+.scan-again:hover{border-color:var(--accent);color:var(--accent)}
+
+/* SCROLL */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+/* TIMELINE */
+.timeline{display:flex;flex-direction:column;gap:0;margin-bottom:28px;position:relative}
+.timeline::before{content:'';position:absolute;left:7px;top:8px;bottom:8px;width:1px;background:var(--border)}
+.tl-item{display:flex;gap:20px;padding:10px 0}
+.tl-dot{width:15px;height:15px;border-radius:50%;border:2px solid var(--accent);background:var(--bg);flex-shrink:0;margin-top:2px;position:relative;z-index:1}
+.tl-content{}
+.tl-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:600}
+.tl-val{font-size:14px;color:var(--text);font-weight:500;margin-top:3px}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="logo">Doc<span>Inspector</span></div>
+    <div class="logo-sub">Lettore metadati nascosti PDF</div>
+  </div>
+  <div class="badge">🔍 Forensics Tool</div>
+</div>
+
+<div class="main">
+
+  <!-- DROP ZONE -->
+  <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()"
+    ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+    <span class="drop-icon">📄</span>
+    <div class="drop-title">Carica un PDF DocEditor Pro</div>
+    <div class="drop-sub">Trascina il file qui oppure clicca per selezionarlo dal tuo dispositivo</div>
+    <button class="choose-btn" onclick="event.stopPropagation();document.getElementById('file-input').click()">
+      Scegli file PDF
+    </button>
+    <input type="file" id="file-input" accept=".pdf" onchange="handleFile(this.files[0])">
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress-wrap" id="progress-wrap">
+    <div class="progress-label" id="progress-label">Analisi in corso…</div>
+    <div class="progress-bar-outer"><div class="progress-bar-inner" id="progress-bar"></div></div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results">
+    <div class="result-header">
+      <div class="result-title" id="res-filename">risultati.pdf</div>
+      <span class="result-badge" id="res-badge"></span>
+    </div>
+
+    <!-- TIMELINE -->
+    <div class="section-title">⏱ Timeline del documento</div>
+    <div class="timeline" id="timeline"></div>
+
+    <!-- CARDS -->
+    <div class="section-title">👤 Autore &amp; Impresa</div>
+    <div class="cards-grid" id="author-cards"></div>
+
+    <div class="section-title">🌐 Ambiente di creazione</div>
+    <div class="cards-grid" id="env-cards"></div>
+
+    <!-- METADATI STANDARD PDF -->
+    <div class="section-title">📋 Metadati standard PDF</div>
+    <div class="raw-panel">
+      <div class="raw-panel-header">
+        <span class="raw-panel-title">Proprietà documento</span>
+        <span style="font-size:11px;color:var(--muted)">da intestazione PDF</span>
+      </div>
+      <table class="meta-table" id="std-meta-table"></table>
+    </div>
+
+    <!-- JSON RAW -->
+    <div class="section-title">🗂 Payload completo decodificato</div>
+    <pre class="json-block" id="raw-json">—</pre>
+
+    <button class="scan-again" onclick="resetUI()">↩ Analizza un altro PDF</button>
+  </div>
+
+</div>
+
+<script>
+// Configura pdf.js worker
+pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+// DRAG & DROP
+function handleDragOver(e){e.preventDefault();document.getElementById('drop-zone').classList.add('drag');}
+function handleDragLeave(){document.getElementById('drop-zone').classList.remove('drag');}
+function handleDrop(e){e.preventDefault();document.getElementById('drop-zone').classList.remove('drag');const f=e.dataTransfer.files[0];if(f&&f.type==='application/pdf') handleFile(f);}
+
+function setProgress(pct,label){
+  document.getElementById('progress-bar').style.width=pct+'%';
+  document.getElementById('progress-label').textContent=label;
+}
+
+async function handleFile(file){
+  if(!file) return;
+  document.getElementById('drop-zone').style.display='none';
+  document.getElementById('results').style.display='none';
+  const pw=document.getElementById('progress-wrap');
+  pw.style.display='block';
+
+  setProgress(10,'Caricamento file…');
+  const ab=await file.arrayBuffer();
+  setProgress(30,'Parsing PDF…');
+
+  let stdMeta={}, hiddenPayload=null, source='nessuno';
+
+  try{
+    const pdf=await pdfjsLib.getDocument({data:ab}).promise;
+    setProgress(55,'Lettura metadati standard…');
+
+    // METADATI STANDARD
+    const meta=await pdf.getMetadata();
+    const info=meta.info||{};
+    stdMeta={
+      Titolo: info.Title||'—',
+      Autore: info.Author||'—',
+      Oggetto: info.Subject||'—',
+      Keywords: info.Keywords||'—',
+      Creatore: info.Creator||'—',
+      Produttore: info.Producer||'—',
+      DataCreazione: info.CreationDate||'—',
+      DataModifica: info.ModDate||'—',
+    };
+
+    setProgress(70,'Ricerca metadati nascosti…');
+
+    // METODO 1: keywords codificate in base64
+    const kw=info.Keywords||'';
+    if(kw.includes('___META_ENCODED___')){
+      try{
+        const enc=kw.split('___META_ENCODED___')[1];
+        hiddenPayload=JSON.parse(decodeURIComponent(escape(atob(enc))));
+        source='Keywords PDF (base64)';
+      }catch(e){}
+    }
+
+    // METODO 2: scansione testo pagine (testo bianco invisibile)
+    if(!hiddenPayload){
+      for(let p=1;p<=pdf.numPages;p++){
+        const page=await pdf.getPage(p);
+        const tc=await page.getTextContent();
+        const allText=tc.items.map(i=>i.str).join('');
+        const marker='DOCEDITOR_META::';
+        const markerH='HIDDEN:';
+        if(allText.includes(marker)){
+          try{
+            const enc=allText.split(marker)[1].split(' ')[0];
+            hiddenPayload=JSON.parse(decodeURIComponent(escape(atob(enc))));
+            source='Testo invisibile pagina '+p;
+            break;
+          }catch(e){}
+        }
+        if(!hiddenPayload&&allText.includes(markerH)){
+          try{
+            const raw=allText.split(markerH)[1];
+            hiddenPayload=JSON.parse(raw);
+            source='Annotazione nascosta pagina '+p;
+            break;
+          }catch(e){}
+        }
+      }
+    }
+
+    // METODO 3: try parse from producer/author
+    if(!hiddenPayload){
+      for(const v of [info.Producer,info.Creator,info.Author]){
+        if(!v) continue;
+        try{
+          if(v.includes('{')){
+            hiddenPayload=JSON.parse(v.substring(v.indexOf('{')));
+            source='Campo '+Object.keys(info).find(k=>info[k]===v);
+            break;
+          }
+        }catch(e){}
+      }
+    }
+
+    setProgress(90,'Elaborazione risultati…');
+
+  }catch(err){
+    setProgress(100,'Errore: '+err.message);
+    setTimeout(()=>{pw.style.display='none';},2000);
+    return;
+  }
+
+  setProgress(100,'Completato!');
+  setTimeout(()=>{
+    pw.style.display='none';
+    renderResults(file.name, stdMeta, hiddenPayload, source);
+  },600);
+}
+
+function renderResults(filename, stdMeta, payload, source){
+  document.getElementById('res-filename').textContent=filename;
+
+  // Badge
+  const badge=document.getElementById('res-badge');
+  if(payload){
+    badge.className='result-badge badge-found';
+    badge.textContent='✅ Metadati nascosti trovati';
+  } else {
+    badge.className='result-badge badge-none';
+    badge.textContent='❌ Metadati nascosti non trovati';
+  }
+
+  // Timeline
+  const tl=document.getElementById('timeline');
+  tl.innerHTML='';
+  if(payload){
+    const events=[
+      {label:'Login utente',val:payload.loginTimestamp?fmtDate(payload.loginTimestamp):'—',ok:!!payload.loginTimestamp},
+      {label:'Esportazione PDF',val:payload.exportTimestamp?fmtDate(payload.exportTimestamp):'—',ok:!!payload.exportTimestamp},
+      {label:'Data leggibile',val:payload.exportData||'—',ok:!!payload.exportData},
+      {label:'Ora esportazione',val:payload.exportOra||'—',ok:!!payload.exportOra},
+    ];
+    events.forEach(ev=>{
+      const d=document.createElement('div');
+      d.className='tl-item';
+      d.innerHTML=`<div class="tl-dot"></div><div class="tl-content"><div class="tl-label">${ev.label}</div><div class="tl-val">${ev.val}</div></div>`;
+      tl.appendChild(d);
+    });
+  } else {
+    tl.innerHTML='<div class="status-none"><strong>Nessun dato temporale trovato</strong>Questo PDF non contiene la firma DocEditor Pro.</div>';
+  }
+
+  // Author cards
+  const ac=document.getElementById('author-cards');
+  ac.innerHTML='';
+  if(payload){
+    addCard(ac,'Autore / Utente',payload.autore||'—','green');
+    addCard(ac,'Impresa',payload.impresa||'—','green');
+    addCard(ac,'Titolo documento',payload.titoloDocumento||'—','blue');
+    addCard(ac,'Firma sistema',payload.generatoDa||'—','blue');
+  } else if(stdMeta.Autore&&stdMeta.Autore!=='—'){
+    addCard(ac,'Autore (da meta PDF)',stdMeta.Autore,'yellow');
+  } else {
+    ac.innerHTML='<div class="status-none full" style="grid-column:1/-1"><strong>Nessun dato autore</strong>PDF non generato con DocEditor Pro.</div>';
+  }
+
+  // Env cards
+  const ec=document.getElementById('env-cards');
+  ec.innerHTML='';
+  if(payload){
+    addCard(ec,'Fuso orario',payload.fuso_orario||'—','yellow');
+    addCard(ec,'UTC Offset',payload.offset_utc||'—','yellow');
+    addCard(ec,'Lingua browser',payload.lingua||'—','blue');
+    addCard(ec,'Piattaforma',payload.piattaforma||'—','blue');
+    addCard(ec,'Risoluzione schermo',payload.risoluzione_schermo||'—','blue');
+    // Browser in full-width
+    const bcard=document.createElement('div');
+    bcard.className='card full';
+    bcard.innerHTML=`<div class="card-label">User Agent (browser)</div><div class="card-value mono">${esc(payload.browser||'—')}</div>`;
+    ec.appendChild(bcard);
+  } else {
+    ec.innerHTML='<div class="status-none" style="grid-column:1/-1"><strong>Nessun dato ambiente</strong>—</div>';
+  }
+
+  // Standard meta table
+  const tbl=document.getElementById('std-meta-table');
+  tbl.innerHTML='';
+  Object.entries(stdMeta).forEach(([k,v])=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${k}</td><td>${esc(v)}</td>`;
+    tbl.appendChild(tr);
+  });
+  // fonte metadati nascosti
+  if(source){
+    const tr2=document.createElement('tr');
+    tr2.innerHTML=`<td>Fonte dati nascosti</td><td style="color:var(--accent)">${esc(source)}</td>`;
+    tbl.appendChild(tr2);
+  }
+
+  // Raw JSON
+  const rj=document.getElementById('raw-json');
+  if(payload){
+    rj.textContent=JSON.stringify(payload,null,2);
+  } else {
+    rj.textContent='Nessun payload DocEditor Pro trovato.\n\nMetadati standard trovati:\n'+JSON.stringify(stdMeta,null,2);
+  }
+
+  document.getElementById('results').style.display='block';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function addCard(container,label,value,color='blue'){
+  const d=document.createElement('div');
+  d.className='card '+color;
+  d.innerHTML=`<div class="card-label">${label}</div><div class="card-value">${esc(value)}</div>`;
+  container.appendChild(d);
+}
+
+function fmtDate(iso){
+  try{
+    const d=new Date(iso);
+    return d.toLocaleString('it-IT',{dateStyle:'full',timeStyle:'medium'});
+  }catch{return iso;}
+}
+
+function esc(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function resetUI(){
+  document.getElementById('results').style.display='none';
+  document.getElementById('drop-zone').style.display='flex';
+  document.getElementById('drop-zone').style.flexDirection='column';
+  document.getElementById('drop-zone').style.alignItems='center';
+  document.getElementById('file-input').value='';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body>
+</html>
