@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verbi speciali completi</title>
+
+<style>
+body{
+    margin:0;
+    font-family: Arial, sans-serif;
+    background:#0f172a;
+    color:#e2e8f0;
+    padding:30px;
+    display:flex;
+    justify-content:center;
+}
+
+.container{
+    width:100%;
+    max-width:1100px;
+}
+
+.topbar{
+    display:flex;
+    gap:10px;
+    margin-bottom:25px;
+}
+
+input{
+    flex:1;
+    padding:12px 14px;
+    border-radius:10px;
+    border:1px solid #334155;
+    background:#1e293b;
+    color:white;
+    outline:none;
+}
+
+button{
+    padding:12px 16px;
+    border:none;
+    border-radius:10px;
+    background:#3b82f6;
+    color:white;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#2563eb;
+}
+
+h3{
+    margin:10px 0 20px 0;
+}
+
+.section{
+    margin-bottom:25px;
+}
+
+.section-title{
+    font-size:14px;
+    font-weight:bold;
+    color:#60a5fa;
+    margin:10px 0;
+    text-transform:uppercase;
+    letter-spacing:1px;
+}
+
+.grid{
+    display:flex;
+    flex-wrap:wrap;
+    gap:12px;
+}
+
+.card{
+    background:#1e293b;
+    border:1px solid #334155;
+    border-radius:14px;
+    padding:12px;
+    min-width:160px;
+    flex:1;
+    box-shadow:0 8px 20px rgba(0,0,0,0.25);
+}
+
+.card pre{
+    margin:0;
+    white-space:pre-wrap;
+}
+
+.small-title{
+    font-size:12px;
+    color:#93c5fd;
+    margin-bottom:6px;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="topbar">
+<input id="word" placeholder="vdv con desinenza -ismo..." />
+<button onclick="run()">Genera</button>
+</div>
+
+<div id="out"></div>
+
+</div>
+
+<script>
+function verbFromNoun(n){
+    const map = {
+        tabagismo: "tabagiare",
+        alcolismo: "alcoliare"
+    };
+    if(map[n]) return map[n];
+    const r = n.replace("ismo","");
+    return r + "are";
+}
+
+function stem(v){ return v.slice(0,-3); }
+function participio(v){ return v.replace("are","ato"); }
+
+function conj(v){
+    const s = stem(v);
+    const part = participio(v);
+
+    return {
+        infinito: v,
+        participio: part,
+
+        gerundio: {
+            presente: s + "ando",
+            passato: "avendo " + part
+        },
+
+        indicativo: {
+            presente: [
+                "io " + s + "o",
+                "tu " + s + "i",
+                "egli " + s + "a",
+                "noi " + s + "iamo",
+                "voi " + s + "ate",
+                "loro " + s + "ano"
+            ],
+            imperfetto: [
+                "io " + s + "avo",
+                "tu " + s + "avi",
+                "egli " + s + "ava",
+                "noi " + s + "avamo",
+                "voi " + s + "avate",
+                "loro " + s + "avano"
+            ],
+            passatoRemoto: [
+                "io " + s + "ai",
+                "tu " + s + "asti",
+                "egli " + s + "ò",
+                "noi " + s + "ammo",
+                "voi " + s + "aste",
+                "loro " + s + "arono"
+            ],
+            futuro: [
+                "io " + s + "erò",
+                "tu " + s + "erai",
+                "egli " + s + "erà",
+                "noi " + s + "eremo",
+                "voi " + s + "erete",
+                "loro " + s + "eranno"
+            ],
+            passatoProssimo: [
+                "io ho " + part,
+                "tu hai " + part,
+                "egli ha " + part,
+                "noi abbiamo " + part,
+                "voi avete " + part,
+                "loro hanno " + part
+            ],
+            trapassatoProssimo: [
+                "io avevo " + part,
+                "tu avevi " + part,
+                "egli aveva " + part,
+                "noi avevamo " + part,
+                "voi avevate " + part,
+                "loro avevano " + part
+            ],
+            trapassatoRemoto: [
+                "io ebbi " + part,
+                "tu avesti " + part,
+                "egli ebbe " + part,
+                "noi avemmo " + part,
+                "voi aveste " + part,
+                "loro ebbero " + part
+            ],
+            futuroAnteriore: [
+                "io avrò " + part,
+                "tu avrai " + part,
+                "egli avrà " + part,
+                "noi avremo " + part,
+                "voi avrete " + part,
+                "loro avranno " + part
+            ]
+        },
+
+        congiuntivo: {
+            presente: [
+                "che io " + s + "i",
+                "che tu " + s + "i",
+                "che egli " + s + "i",
+                "che noi " + s + "iamo",
+                "che voi " + s + "iate",
+                "che loro " + s + "ino"
+            ],
+            imperfetto: [
+                "che io " + s + "assi",
+                "che tu " + s + "assi",
+                "che egli " + s + "asse",
+                "che noi " + s + "assimo",
+                "che voi " + s + "aste",
+                "che loro " + s + "assero"
+            ],
+            passato: [
+                "che io abbia " + part,
+                "che tu abbia " + part,
+                "che egli abbia " + part,
+                "che noi abbiamo " + part,
+                "che voi abbiate " + part,
+                "che loro abbiano " + part
+            ],
+            trapassato: [
+                "che io avessi " + part,
+                "che tu avessi " + part,
+                "che egli avesse " + part,
+                "che noi avessimo " + part,
+                "che voi aveste " + part,
+                "che loro avessero " + part
+            ]
+        },
+
+        condizionale: {
+            presente: [
+                "io " + s + "erei",
+                "tu " + s + "eresti",
+                "egli " + s + "erebbe",
+                "noi " + s + "eremmo",
+                "voi " + s + "ereste",
+                "loro " + s + "erebbero"
+            ],
+            passato: [
+                "io avrei " + part,
+                "tu avresti " + part,
+                "egli avrebbe " + part,
+                "noi avremmo " + part,
+                "voi avreste " + part,
+                "loro avrebbero " + part
+            ]
+        }
+    };
+}
+
+function makeSection(title, html){
+    return `
+    <div class="section">
+        <div class="section-title">${title}</div>
+        <div class="grid">${html}</div>
+    </div>`;
+}
+
+function makeCard(title, content){
+    return `
+    <div class="card">
+        <div class="small-title">${title}</div>
+        <pre>${content}</pre>
+    </div>`;
+}
+
+function run(){
+    const w = document.getElementById("word").value.trim().toLowerCase();
+    const v = verbFromNoun(w);
+    const c = conj(v);
+
+    let out = `<h3>${w} → ${v}</h3>`;
+
+    function build(obj, prefix=""){
+        let html = "";
+
+        for(let k in obj){
+            if(Array.isArray(obj[k])){
+                html += makeCard(prefix + k, obj[k].join("\n"));
+            } else if(typeof obj[k] === "object"){
+                html += build(obj[k], k + " ");
+            } else {
+                html += makeCard(prefix + k, obj[k]);
+            }
+        }
+        return html;
+    }
+
+    out += makeSection("coniugazione", build(c));
+
+    document.getElementById("out").innerHTML = out;
+}
+</script>
+
+</body>
+</html>
