@@ -2,22 +2,53 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
-<link rel="stylesheet" href="css1.css">
-<title>Area protetta</title>
-<style>
-</style>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="../css1.css">
+<title>Sistemi Interni di CipoCity</title>
 </head>
+
 <body>
+
+<div class="background day-bg"></div>
+<div class="background night-bg"></div>
+
+<div class="container">
+
+  <div class="hero glass">
     <h1>Sistemi Interni di CipoCity</h1>
+    <p>Servizi e strumenti della città</p>
+  </div>
 
-    <a href="pagamenti/index.html">Pagamenti</a><br>
-    <a href="registroelettronico.html">Registro Elettronico</a><br>
-    <a href="registroelettronico.html">CipoMail</a><br>
-    <a href="DocEditor-CipoCity/editor.html">DocEditor</a><br>
+  <div class="cards">
 
+    <a class="card glass" href="https://cipobot.onrender.com/">
+      <h2>💳 Pagamenti</h2>
+    </a>
 
-    <p>QUESTA E' UNA PAGINA RISERVATA<p>
-    <a href="/index.html">Torna alla homepage</a><br>
+    <a class="card glass" href="https://cipomail.onrender.com/">
+      <h2>📧 CipoMail</h2>
+    </a>
+
+    <a class="card glass" href="https://registroelettronico-cipocity.onrender.com/">
+      <h2>📚 Registro Elettronico</h2>
+    </a>
+
+    <a class="card glass" href="DocEditor-CipoCity/editor.html">
+      <h2>📝 DocEditor</h2>
+    </a>
+
+    <a class="card glass" href="/index.html">
+      <h2>⬅ Torna alla Home</h2>
+    </a>
+
+  </div>
+
+</div>
+
+<!-- TOGGLE UNIFICATO -->
+<button id="themeToggle" onclick="toggleTheme()"></button>
+
+<script src="../theme.js"></script>
 
 </body>
 </html>

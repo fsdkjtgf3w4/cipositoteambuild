@@ -2,23 +2,73 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CipoCity - Luoghi</title>
 <link rel="stylesheet" href="css1.css">
-<title>Sito di CipoCity</title>
-</head> 
+</head>
+
 <body>
-  <h1>CipoCity</h1>
 
-  <a href="luoghi/centro.html">Centro</a><br>
-  <a href="luoghi/distretto_commerciale.html">Distretto Commerciale</a><br>
-  <a href="luoghi/distretto_finanziario.html">Distretto finanziario</a><br>
-  <a href="luoghi/monarca.html">Città del monarca</a><br>
-  <a href="luoghi/residenziale.html">Quartiere residenziale</a><br>
-  <a href="luoghi/interporto.html">Interporto</a><br>
-  <a href="luoghi/saintdenis.html">Saint Denis</a><br>
-  <a href="luoghi/pallepelose.html">Quartiere palle pelose</a><br>
-  <a href="luoghi/marittima.html">CipoCity marittima</a><br>
-  <a href="index.html">Torna alla homepage</a><br>
+<div class="background day-bg"></div>
+<div class="background night-bg"></div>
 
+<div class="container">
+
+  <div class="hero glass">
+    <h1>Luoghi di CipoCity</h1>
+    <p>Esplora i distretti e le aree della città</p>
+  </div>
+
+  <div class="cards">
+
+    <a class="card glass" href="luoghi/centro.html">
+      <h2>🏙️ Centro</h2>
+    </a>
+
+    <a class="card glass" href="luoghi/distretto_commerciale.html">
+      <h2>🛍️ Distretto Commerciale</h2>
+    </a>
+
+    <a class="card glass" href="luoghi/distretto_finanziario.html">
+      <h2>🏦 Distretto Finanziario</h2>
+    </a>
+
+    <a class="card glass" href="luoghi/monarca.html">
+      <h2>👑 Città del Monarca</h2>
+    </a>
+
+    <a class="card glass" href="luoghi/residenziale.html">
+      <h2>🏡 Quartiere Residenziale</h2>
+    </a>
+
+    <a class="card glass" href="luoghi/interporto.html">
+      <h2>🚚 Interporto</h2>
+    </a>
+
+    <a class="card glass" href="luoghi/saintdenis.html">
+      <h2>⛪ Saint Denis</h2>
+    </a>
+
+    <a class="card glass" href="luoghi/pallepelose.html">
+      <h2>🌿 Quartiere Palle Pelose</h2>
+    </a>
+
+    <a class="card glass" href="luoghi/marittima.html">
+      <h2>🌊 CipoCity Marittima</h2>
+    </a>
+
+    <a class="card glass" href="index.html">
+      <h2>⬅ Torna alla Home</h2>
+    </a>
+
+  </div>
+
+</div>
+
+<!-- BOTTON EMOJI (COERENTE COL SISTEMA) -->
+<button id="themeToggle" onclick="toggleTheme()"></button>
+
+<script src="theme.js"></script>
 
 </body>
 </html>
