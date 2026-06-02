@@ -22,12 +22,12 @@ body{
 }
 
 .day-bg{
-    background-image:url("immagini/giorno.png");
+    background-image:url("/cipositoteambuild/immagini/giorno.png");
     opacity:1;
 }
 
 .night-bg{
-    background-image:url("immagini/notte.png");
+    background-image:url("/cipositoteambuild/immagini/notte.png");
     opacity:0;
 }
 
