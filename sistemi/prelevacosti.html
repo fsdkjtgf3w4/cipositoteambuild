@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏧 ATM Premium Simulator</title>
+
+<style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Inter,Arial,sans-serif;
+}
+
+body{
+min-height:100vh;
+background:radial-gradient(circle at top,#1e3a8a,#020617 70%);
+display:flex;
+justify-content:center;
+align-items:center;
+padding:20px;
+color:#fff;
+}
+
+.atm{
+width:1200px;
+max-width:100%;
+background:#0f172a;
+border:2px solid #334155;
+border-radius:30px;
+overflow:hidden;
+box-shadow:0 0 40px rgba(59,130,246,.25);
+}
+
+.header{
+padding:25px;
+text-align:center;
+background:linear-gradient(90deg,#1d4ed8,#2563eb);
+}
+
+.header h1{
+font-size:32px;
+}
+
+.main{
+display:grid;
+grid-template-columns:1.2fr .8fr;
+gap:20px;
+padding:20px;
+}
+
+.panel{
+background:#111827;
+border:1px solid #334155;
+border-radius:20px;
+padding:20px;
+}
+
+.screen{
+background:#020617;
+border:2px solid #22c55e;
+border-radius:16px;
+padding:20px;
+}
+
+.screen h2{
+color:#4ade80;
+margin-bottom:15px;
+}
+
+.amount-box{
+margin-bottom:20px;
+}
+
+.amount-box input{
+width:100%;
+padding:15px;
+font-size:24px;
+border-radius:12px;
+border:1px solid #334155;
+background:#0f172a;
+color:white;
+}
+
+.note-grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+gap:12px;
+}
+
+.note{
+background:#1e293b;
+border:1px solid #334155;
+border-radius:16px;
+padding:15px;
+transition:.2s;
+}
+
+.note.disabled{
+opacity:.35;
+}
+
+.note-title{
+text-align:center;
+font-size:24px;
+font-weight:bold;
+margin-bottom:10px;
+}
+
+.counter{
+display:flex;
+justify-content:center;
+align-items:center;
+gap:8px;
+}
+
+.counter button{
+width:38px;
+height:38px;
+border:none;
+border-radius:10px;
+cursor:pointer;
+font-size:20px;
+font-weight:bold;
+background:#2563eb;
+color:white;
+}
+
+.counter button:disabled{
+opacity:.3;
+cursor:not-allowed;
+}
+
+.counter span{
+font-size:20px;
+width:40px;
+text-align:center;
+}
+
+.shipping{
+margin-top:20px;
+padding:15px;
+background:#1e293b;
+border-radius:12px;
+}
+
+.summary{
+display:flex;
+flex-direction:column;
+gap:12px;
+}
+
+.card{
+background:#1e293b;
+padding:15px;
+border-radius:14px;
+}
+
+.card-title{
+font-size:14px;
+opacity:.8;
+}
+
+.value{
+font-size:28px;
+font-weight:bold;
+margin-top:5px;
+}
+
+.green{color:#4ade80;}
+.red{color:#f87171;}
+.yellow{color:#facc15;}
+.blue{color:#60a5fa;}
+
+.progress{
+height:16px;
+background:#0f172a;
+border-radius:20px;
+overflow:hidden;
+margin-top:10px;
+}
+
+.progress-fill{
+height:100%;
+background:linear-gradient(90deg,#22c55e,#4ade80);
+width:0%;
+transition:.3s;
+}
+
+.receipt{
+background:#020617;
+padding:20px;
+border-radius:14px;
+font-family:monospace;
+white-space:pre-wrap;
+overflow:auto;
+max-height:350px;
+}
+
+.status{
+font-size:20px;
+font-weight:bold;
+margin-top:10px;
+}
+
+@media(max-width:900px){
+.main{
+grid-template-columns:1fr;
+}
+}
+</style>
+</head>
+<body>
+
+<div class="atm">
+
+<div class="header">
+<h1>🏧 ATM Premium Simulator</h1>
+</div>
+
+<div class="main">
+
+<div class="panel">
+
+<div class="screen">
+
+<h2>Importo da prelevare</h2>
+
+<div class="amount-box">
+<input type="number" id="amount" placeholder="Inserisci importo">
+</div>
+
+<div class="note-grid" id="notes"></div>
+
+<div class="shipping">
+<label>
+<input type="checkbox" id="shipping">
+ Spedizione (+ €1.30)
+</label>
+</div>
+
+</div>
+
+</div>
+
+<div class="panel">
+
+<div class="summary">
+
+<div class="card">
+<div class="card-title">Totale selezionato</div>
+<div class="value blue" id="selectedTotal">€0</div>
+</div>
+
+<div class="card">
+<div class="card-title">Banconote</div>
+<div class="value yellow" id="noteCount">0</div>
+</div>
+
+<div class="card">
+<div class="card-title">Fogli necessari</div>
+<div class="value green" id="sheetCount">0</div>
+<div class="progress">
+<div class="progress-fill" id="fillBar"></div>
+</div>
+</div>
+
+<div class="card">
+<div class="card-title">Costo totale</div>
+<div class="value green" id="costTotal">€0.00</div>
+</div>
+
+<div class="card">
+<div id="status" class="status yellow">
+Inserisci un importo
+</div>
+</div>
+
+<div class="receipt" id="receipt"></div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+const denominations=[5,10,20,50,100,200,500];
+const quantities={};
+
+const notesContainer=document.getElementById("notes");
+
+denominations.forEach(value=>{
+
+quantities[value]=0;
+
+const div=document.createElement("div");
+div.className="note";
+div.dataset.value=value;
+
+div.innerHTML=`
+<div class="note-title">€${value}</div>
+
+<div class="counter">
+<button onclick="changeQty(${value},-1)">−</button>
+<span id="qty-${value}">0</span>
+<button class="plus" onclick="changeQty(${value},1)">+</button>
+</div>
+`;
+
+notesContainer.appendChild(div);
+
+});
+
+document.getElementById("amount").addEventListener("input",()=>{
+
+for(const k in quantities){
+quantities[k]=0;
+document.getElementById(`qty-${k}`).textContent=0;
+}
+
+updateAvailability();
+calculate();
+
+});
+
+document.getElementById("shipping").addEventListener("change",calculate);
+
+function getCurrentTotal(){
+
+let total=0;
+
+for(const value in quantities){
+total+=Number(value)*quantities[value];
+}
+
+return total;
+
+}
+
+function changeQty(value,delta){
+
+const requested=parseFloat(document.getElementById("amount").value)||0;
+
+if(delta>0){
+
+if(getCurrentTotal()+value>requested){
+return;
+}
+
+}
+
+quantities[value]=Math.max(0,quantities[value]+delta);
+
+document.getElementById(`qty-${value}`).textContent=quantities[value];
+
+calculate();
+updateButtons();
+
+}
+
+function updateAvailability(){
+
+const requested=parseFloat(document.getElementById("amount").value)||0;
+
+document.querySelectorAll(".note").forEach(note=>{
+
+const value=parseInt(note.dataset.value);
+
+if(value>requested){
+note.classList.add("disabled");
+}else{
+note.classList.remove("disabled");
+}
+
+});
+
+updateButtons();
+
+}
+
+function updateButtons(){
+
+const requested=parseFloat(document.getElementById("amount").value)||0;
+
+const current=getCurrentTotal();
+
+document.querySelectorAll(".note").forEach(note=>{
+
+const value=parseInt(note.dataset.value);
+const plus=note.querySelector(".plus");
+
+if(value>requested){
+plus.disabled=true;
+return;
+}
+
+plus.disabled=(current+value)>requested;
+
+});
+
+}
+
+function calculate(){
+
+const requested=parseFloat(document.getElementById("amount").value)||0;
+
+const total=getCurrentTotal();
+
+let count=0;
+
+for(const value in quantities){
+count+=quantities[value];
+}
+
+const sheets=Math.ceil(count/8);
+
+const sheetCost=sheets*2;
+
+const shipping=document.getElementById("shipping").checked?1.30:0;
+
+let bonus=0;
+
+if(count>8 && count%8===1){
+bonus=2;
+}
+
+const finalCost=sheetCost+shipping;
+
+document.getElementById("selectedTotal").textContent=`€${total}`;
+document.getElementById("noteCount").textContent=count;
+document.getElementById("sheetCount").textContent=sheets;
+document.getElementById("costTotal").textContent=`€${finalCost.toFixed(2)}`;
+
+const fill=count===0?0:((count-(Math.max(0,sheets-1)*8))/8)*100;
+document.getElementById("fillBar").style.width=Math.min(fill,100)+"%";
+
+const status=document.getElementById("status");
+
+if(!requested){
+status.className="status yellow";
+status.textContent="Inserisci un importo";
+}
+else if(total===requested){
+status.className="status green";
+status.textContent="✅ Importo completato";
+}
+else{
+status.className="status yellow";
+status.textContent=`Mancano €${requested-total}`;
+}
+
+let receipt=`═══════════════════
+ATM RECEIPT
+═══════════════════
+
+Importo richiesto: €${requested}
+Importo selezionato: €${total}
+
+`;
+
+denominations.forEach(v=>{
+
+if(quantities[v]>0){
+receipt+=`€${v} x ${quantities[v]}\n`;
+}
+
+});
+
+receipt+=`
+---------------------
+Banconote: ${count}
+Fogli: ${sheets}
+Costo fogli: €${sheetCost.toFixed(2)}
+Spedizione: €${shipping.toFixed(2)}
+`;
+
+if(bonus){
+receipt+=`Bonus ultimo foglio: +${bonus} 🎁\n`;
+}
+
+receipt+=`
+---------------------
+Totale costi: €${finalCost.toFixed(2)}
+`;
+
+document.getElementById("receipt").textContent=receipt;
+
+updateButtons();
+
+}
+
+updateAvailability();
+calculate();
+
+</script>
+
+</body>
+</html>
