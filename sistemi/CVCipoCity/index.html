@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Curriculum Vitae di CipoCity — Editor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <a href="./../index.html">Torna alla homepage</a>
+
+<div class="app">
+
+  <!-- ===== HEADER ===== -->
+  <header class="app-header">
+    <div class="brand">
+      <span class="brand-mark">CC</span>
+      <div class="brand-text">
+        <strong>CipoCity</strong>
+        <span>Editor Curriculum Vitae</span>
+      </div>
+    </div>
+
+    <div class="cv-switcher">
+      <label for="cv-select" class="sr-only">Curriculum selezionato</label>
+      <select id="cv-select"></select>
+      <button class="btn btn-icon" id="btn-new-cv" title="Nuovo curriculum">+ Nuovo</button>
+      <button class="btn btn-icon" id="btn-duplicate-cv" title="Duplica curriculum">Duplica</button>
+      <button class="btn btn-icon btn-danger" id="btn-delete-cv" title="Elimina curriculum">Elimina</button>
+    </div>
+
+    <div class="header-actions">
+      <button class="btn" id="btn-import">Importa JSON</button>
+      <button class="btn" id="btn-export">Esporta JSON</button>
+      <button class="btn btn-primary" id="btn-generate-pdf">Genera PDF</button>
+      <input type="file" id="import-file-input" accept=".json" hidden>
+    </div>
+  </header>
+
+  <div class="save-status" id="save-status">Tutte le modifiche salvate</div>
+
+  <!-- ===== BODY ===== -->
+  <div class="app-body">
+
+    <!-- EDITOR -->
+    <main class="editor-panel">
+
+      <nav class="tabs" id="tabs">
+        <button class="tab-btn active" data-tab="personali">Dati personali</button>
+        <button class="tab-btn" data-tab="istruzione">Istruzione</button>
+        <button class="tab-btn" data-tab="esperienze">Esperienza</button>
+        <button class="tab-btn" data-tab="lingue">Lingue</button>
+        <button class="tab-btn" data-tab="informatiche">Competenze informatiche</button>
+        <button class="tab-btn" data-tab="altre">Altre competenze</button>
+        <button class="tab-btn" data-tab="firma">Firma</button>
+      </nav>
+
+      <!-- DATI PERSONALI -->
+      <section class="tab-content active" id="tab-personali">
+        <h2>Dati personali</h2>
+        <div class="form-grid">
+          <div class="field">
+            <label for="p-nome">Nome *</label>
+            <input type="text" id="p-nome" maxlength="80">
+            <span class="error-msg" data-for="p-nome"></span>
+          </div>
+          <div class="field">
+            <label for="p-dataNascita">Data di nascita</label>
+            <input type="date" id="p-dataNascita">
+            <span class="error-msg" data-for="p-dataNascita"></span>
+          </div>
+          <div class="field">
+            <label for="p-luogoNascita">Luogo di nascita</label>
+            <input type="text" id="p-luogoNascita" maxlength="120">
+          </div>
+          <div class="field">
+            <label for="p-nazionalita">Nazionalità</label>
+            <input type="text" id="p-nazionalita" maxlength="80">
+          </div>
+          <div class="field">
+            <label for="p-email">CipoMail *</label>
+            <input type="email" id="p-email" maxlength="120" placeholder="nome@cipomail.it">
+            <span class="error-msg" data-for="p-email"></span>
+          </div>
+          <div class="field">
+            <label for="p-serialeCI">Seriale Carta di Identità</label>
+            <input type="text" id="p-serialeCI" maxlength="40">
+          </div>
+        </div>
+
+        <div class="photo-box">
+          <label>Foto profilo (opzionale)</label>
+          <div class="photo-row">
+            <div class="photo-preview" id="photo-preview">
+              <span id="photo-placeholder">Nessuna foto</span>
+              <img id="photo-img" alt="Foto profilo" hidden>
+            </div>
+            <div class="photo-actions">
+              <input type="file" id="photo-input" accept="image/*" hidden>
+              <button class="btn" id="btn-photo-upload">Carica foto</button>
+              <button class="btn btn-ghost" id="btn-photo-remove">Rimuovi</button>
+              <p class="hint">L'immagine viene ridimensionata e compressa automaticamente. Nessun file lascia il tuo browser.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ISTRUZIONE -->
+      <section class="tab-content" id="tab-istruzione">
+        <div class="section-head">
+          <h2>Istruzione e formazione</h2>
+          <button class="btn btn-primary" data-add="istruzione">+ Aggiungi titolo di studio</button>
+        </div>
+        <p class="hint">Trascina le voci per riordinarle.</p>
+        <ul class="item-list" id="list-istruzione" data-section="istruzione"></ul>
+        <p class="empty-msg" id="empty-istruzione">Nessun titolo di studio inserito.</p>
+      </section>
+
+      <!-- ESPERIENZE -->
+      <section class="tab-content" id="tab-esperienze">
+        <div class="section-head">
+          <h2>Esperienze lavorative</h2>
+          <button class="btn btn-primary" data-add="esperienze">+ Aggiungi esperienza</button>
+        </div>
+        <p class="hint">Trascina le voci per riordinarle.</p>
+        <ul class="item-list" id="list-esperienze" data-section="esperienze"></ul>
+        <p class="empty-msg" id="empty-esperienze">Nessuna esperienza lavorativa inserita.</p>
+      </section>
+
+      <!-- LINGUE -->
+      <section class="tab-content" id="tab-lingue">
+        <div class="section-head">
+          <h2>Lingue</h2>
+          <button class="btn btn-primary" data-add="lingue">+ Aggiungi lingua</button>
+        </div>
+        <p class="hint">Trascina le voci per riordinarle.</p>
+        <ul class="item-list" id="list-lingue" data-section="lingue"></ul>
+        <p class="empty-msg" id="empty-lingue">Nessuna lingua inserita.</p>
+      </section>
+
+      <!-- COMPETENZE INFORMATICHE -->
+      <section class="tab-content" id="tab-informatiche">
+        <div class="section-head">
+          <h2>Competenze informatiche</h2>
+          <button class="btn btn-primary" data-add="informatiche">+ Aggiungi competenza</button>
+        </div>
+        <p class="hint">Trascina le voci per riordinarle.</p>
+        <ul class="item-list" id="list-informatiche" data-section="informatiche"></ul>
+        <p class="empty-msg" id="empty-informatiche">Nessuna competenza informatica inserita.</p>
+      </section>
+
+      <!-- ALTRE COMPETENZE -->
+      <section class="tab-content" id="tab-altre">
+        <div class="section-head">
+          <h2>Altre competenze</h2>
+          <button class="btn btn-primary" data-add="altre">+ Aggiungi elemento</button>
+        </div>
+        <p class="hint">Trascina le voci per riordinarle.</p>
+        <ul class="item-list" id="list-altre" data-section="altre"></ul>
+        <p class="empty-msg" id="empty-altre">Nessun elemento inserito.</p>
+      </section>
+
+      <!-- FIRMA -->
+      <section class="tab-content" id="tab-firma">
+        <h2>Firma grafica</h2>
+        <p class="hint">Disegna la firma con mouse o touch. La firma non ha alcun valore legale e comparirà nell'anteprima e su ogni pagina del PDF.</p>
+        <div class="signature-box">
+          <canvas id="signature-pad" width="500" height="180"></canvas>
+        </div>
+        <div class="signature-controls">
+          <label for="signature-scale">Dimensione firma</label>
+          <input type="range" id="signature-scale" min="0.5" max="1.5" step="0.05" value="1">
+          <button class="btn" id="btn-signature-clear">Cancella firma</button>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- PREVIEW -->
+    <aside class="preview-panel">
+      <div class="preview-controls">
+        <div class="view-toggle">
+          <button class="toggle-btn active" data-view="desktop">Desktop</button>
+          <button class="toggle-btn" data-view="mobile">Mobile</button>
+        </div>
+        <span class="preview-label">Anteprima in tempo reale</span>
+      </div>
+      <div class="preview-scroll" id="preview-scroll">
+        <div class="a4-page" id="cv-preview"></div>
+      </div>
+    </aside>
+
+  </div>
+</div>
+
+<!-- ===== MODAL (generic add/edit form) ===== -->
+<div class="modal-overlay" id="modal-overlay" hidden>
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="modal-head">
+      <h3 id="modal-title">Aggiungi elemento</h3>
+      <button class="modal-close" id="modal-close" aria-label="Chiudi">&times;</button>
+    </div>
+    <form id="modal-form" class="modal-form"></form>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="modal-cancel" type="button">Annulla</button>
+      <button class="btn btn-primary" id="modal-save" type="submit" form="modal-form">Salva</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<!-- ===== LIBRARIES (frontend-only, CDN) ===== -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
