@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CipoCity - Installazione App</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <main class="container center-page">
+        <div class="card welcome-card">
+            <div class="logo">C</div>
+            <h1>CipoCity</h1>
+            <p class="subtitle">Guida all'installazione delle applicazioni</p>
+
+            <h2>Quale dispositivo utilizzi?</h2>
+
+            <div class="platform-buttons">
+                <button class="platform-btn" onclick="location.href='android.html'">
+                    <span>🤖</span>
+                    <strong>Android</strong>
+                    <small>Dispositivo Android</small>
+                </button>
+
+                <button class="platform-btn" onclick="showIOS()">
+                    <span></span>
+                    <strong>iOS</strong>
+                    <small>iPhone / iPad</small>
+                </button>
+            </div>
+
+            <div id="ios-message" class="notice hidden">
+                <strong>iOS in arrivo presto</strong>
+                <p>Le applicazioni per iPhone e iPad saranno disponibili prossimamente.</p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function showIOS() {
+            document.getElementById('ios-message').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>

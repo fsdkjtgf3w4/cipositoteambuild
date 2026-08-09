@@ -1,0 +1,433 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    --bg: #f5f7fb;
+    --card: #ffffff;
+    --text: #172033;
+    --muted: #697386;
+    --primary: #5865f2;
+    --primary-dark: #4752c4;
+    --border: #e6e9f0;
+    --success-bg: #eefbf4;
+    --success: #198754;
+}
+
+body {
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--text);
+    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+.container {
+    width: min(100% - 32px, 920px);
+    margin: 0 auto;
+    padding: 48px 0 70px;
+}
+
+.center-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+.card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    box-shadow: 0 15px 50px rgba(25, 35, 55, 0.08);
+}
+
+.welcome-card {
+    width: min(100%, 680px);
+    padding: 48px;
+    text-align: center;
+}
+
+.logo {
+    width: 58px;
+    height: 58px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 18px;
+    border-radius: 16px;
+    background: var(--primary);
+    color: white;
+    font-size: 28px;
+    font-weight: 800;
+}
+
+h1 {
+    font-size: clamp(28px, 5vw, 42px);
+    letter-spacing: -1px;
+}
+
+.welcome-card h2 {
+    margin-top: 40px;
+    font-size: 20px;
+}
+
+.subtitle {
+    color: var(--muted);
+    margin-top: 8px;
+}
+
+.platform-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-top: 24px;
+}
+
+.platform-btn {
+    border: 1px solid var(--border);
+    background: white;
+    border-radius: 18px;
+    padding: 25px 15px;
+    cursor: pointer;
+    color: var(--text);
+    transition: .2s;
+}
+
+.platform-btn:hover {
+    border-color: var(--primary);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(88, 101, 242, .12);
+}
+
+.platform-btn span {
+    display: block;
+    font-size: 34px;
+    margin-bottom: 12px;
+}
+
+.platform-btn strong,
+.platform-btn small {
+    display: block;
+}
+
+.platform-btn strong {
+    font-size: 17px;
+}
+
+.platform-btn small {
+    color: var(--muted);
+    margin-top: 5px;
+}
+
+.notice {
+    margin-top: 20px;
+    padding: 18px;
+    border-radius: 14px;
+    background: #fff8e8;
+    color: #8a6200;
+}
+
+.notice p {
+    margin-top: 5px;
+    font-size: 14px;
+}
+
+.hidden {
+    display: none;
+}
+
+.page-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 65px;
+}
+
+.page-header .logo {
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.page-header h1 {
+    font-size: 25px;
+}
+
+.page-header p {
+    color: var(--muted);
+    margin-top: 3px;
+}
+
+.intro {
+    margin-bottom: 30px;
+}
+
+.badge,
+.step-label {
+    color: var(--primary);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.intro h2 {
+    margin-top: 8px;
+    font-size: clamp(28px, 5vw, 38px);
+}
+
+.intro p,
+.guide-header p {
+    color: var(--muted);
+    margin-top: 10px;
+    line-height: 1.6;
+}
+
+.apps-grid {
+    display: grid;
+    gap: 15px;
+}
+
+.app-card {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 22px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    text-decoration: none;
+    color: var(--text);
+    transition: .2s;
+}
+
+.app-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--primary);
+    box-shadow: 0 10px 30px rgba(25, 35, 55, .08);
+}
+
+.app-icon {
+    width: 54px;
+    height: 54px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border-radius: 15px;
+    background: #eef0ff;
+    font-size: 27px;
+}
+
+.app-icon.large {
+    width: 76px;
+    height: 76px;
+    font-size: 36px;
+    margin: 0 auto 18px;
+}
+
+.app-card h3 {
+    font-size: 18px;
+}
+
+.app-card p {
+    margin-top: 5px;
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.arrow {
+    margin-left: auto;
+    font-size: 24px;
+    color: var(--primary);
+}
+
+.web-card {
+    background: #fafbff;
+}
+
+.back {
+    display: inline-block;
+    margin-bottom: 50px;
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.guide-header {
+    text-align: center;
+    margin-bottom: 55px;
+}
+
+.guide-header h1 {
+    margin-top: 5px;
+}
+
+.timeline {
+    position: relative;
+    max-width: 760px;
+    margin: 0 auto;
+}
+
+.timeline::before {
+    content: "";
+    position: absolute;
+    left: 27px;
+    top: 28px;
+    bottom: 28px;
+    width: 2px;
+    background: #dfe3ef;
+}
+
+.step {
+    position: relative;
+    display: flex;
+    gap: 25px;
+    margin-bottom: 25px;
+}
+
+.step:last-child {
+    margin-bottom: 0;
+}
+
+.step-number {
+    position: relative;
+    z-index: 1;
+    width: 56px;
+    height: 56px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--primary);
+    color: white;
+    font-size: 20px;
+    font-weight: 800;
+    box-shadow: 0 0 0 7px var(--bg);
+}
+
+.step-content {
+    flex: 1;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 26px;
+}
+
+.step-content h2 {
+    margin-top: 6px;
+    font-size: 21px;
+}
+
+.step-content p {
+    color: var(--muted);
+    line-height: 1.6;
+    margin-top: 9px;
+}
+
+.button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 20px;
+    padding: 12px 18px;
+    border-radius: 10px;
+    background: #eef0ff;
+    color: var(--primary-dark);
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 14px;
+    transition: .2s;
+}
+
+.button:hover {
+    background: #e2e5ff;
+}
+
+.button.primary {
+    background: var(--primary);
+    color: white;
+}
+
+.button.primary:hover {
+    background: var(--primary-dark);
+}
+
+@media (max-width: 600px) {
+    .container {
+        width: min(100% - 22px, 920px);
+        padding: 25px 0 45px;
+    }
+
+    .center-page {
+        padding: 12px;
+    }
+
+    .welcome-card {
+        padding: 30px 18px;
+        border-radius: 20px;
+    }
+
+    .platform-buttons {
+        grid-template-columns: 1fr;
+    }
+
+    .page-header {
+        margin-bottom: 45px;
+    }
+
+    .app-card {
+        padding: 17px;
+        gap: 13px;
+    }
+
+    .app-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 23px;
+    }
+
+    .app-card h3 {
+        font-size: 16px;
+    }
+
+    .arrow {
+        font-size: 20px;
+    }
+
+    .back {
+        margin-bottom: 35px;
+    }
+
+    .guide-header {
+        margin-bottom: 40px;
+    }
+
+    .step {
+        gap: 14px;
+    }
+
+    .step-number {
+        width: 48px;
+        height: 48px;
+        font-size: 17px;
+    }
+
+    .timeline::before {
+        left: 23px;
+    }
+
+    .step-content {
+        padding: 20px 17px;
+    }
+
+    .step-content h2 {
+        font-size: 18px;
+    }
+
+    .button {
+        width: 100%;
+    }
+}
